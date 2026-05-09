@@ -542,8 +542,8 @@ let currentEmp = null;
 const now = new Date();
 
 // HELPERS
-const fmt = n => Math.round(n||0).toLocaleString('ar-SA');
-const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-SA') : '—';
+const fmt = n => Math.round(n||0).toLocaleString(lang==='en'?'en-US':'ar-SA');
+const fmtDate = d => d ? new Date(d).toLocaleDateString(lang==='en'?'en-US':'ar-SA') : '—';
 function bst(s) {
   const m = {pending:'<span class="badge ba">معلق</span>',approved:'<span class="badge bg">مقبول</span>',rejected:'<span class="badge br">مرفوض</span>',paid:'<span class="badge bg">مدفوع</span>'};
   return m[s] || `<span class="badge bb">${s}</span>`;
@@ -1140,52 +1140,41 @@ function toggleLang() {
   lang = lang==='ar'?'en':'ar';
   document.documentElement.dir = lang==='ar'?'rtl':'ltr';
   document.documentElement.lang = lang;
-  const t = T[lang];
   const isEn = lang==='en';
 
-  // Update ALL elements by ID including form labels and buttons
-  Object.keys(t).forEach(id => {
+  // Full dictionary - translate all elements
+  const allTxt = isEn ? {'l-id-lbl': 'National ID / Iqama *', 'l-pass-lbl': 'Password *', 'l-btn': 'Login', 'l-forgot-btn': 'Forgot password?', 'l-note': 'First time? Enter your ID and click Login to set a password', 'set-pass-title': 'Welcome! Set a password for your account', 'l-newpass-lbl': 'New Password *', 'l-confirmpass-lbl': 'Confirm Password *', 'l-setpass-btn': 'Save & Login', 'forgot-title': 'Reset Password', 'l-forgot-id-lbl': 'National ID / Iqama *', 'l-forgot-phone-lbl': 'Registered Phone *', 'l-reset-btn': 'Set New Password', 'l-back-btn': '← Back to Login', 'portal-company': 'Yahma Car Rental Company', 'portal-logout': 'Logout', 'stat-leaves-lbl': 'My Leaves', 'stat-salary-lbl': 'Basic Salary', 'stat-eosb-lbl': 'End of Service', 'tab-info': '👤 My Info', 'tab-leaves': '📅 My Leaves', 'tab-payroll': '💰 My Payroll', 'tab-tickets': '✈️ My Tickets', 'tab-request': '➕ Leave Request', 'tab-resignation': '📤 Resignation', 'tab-complaint': '📢 Complaint/Suggestion', 'tab-loan': '💵 Loan Request', 'tab-profile': '✏️ Edit My Info', 'tab-notifications': '🔔 Notifications', 'tab-history': '📋 My Requests', 'tab-password': '🔑 Password', 'info-title': 'My Personal Info', 'leaves-title': 'Leave History', 'th-l1': 'Leave Type', 'th-l2': 'From', 'th-l3': 'To', 'th-l4': 'Days', 'th-l5': 'Status', 'payroll-title': 'Payroll History', 'th-p1': 'Month', 'th-p2': 'Basic Salary', 'th-p3': 'Bonus', 'th-p4': 'Deductions', 'th-p5': 'Net', 'th-p6': 'Status', 'tickets-title': 'My Tickets', 'th-tk1': 'Destination', 'th-tk2': 'Departure', 'th-tk3': 'Return', 'th-tk4': 'Ticket No.', 'req-title': '➕ New Leave Request', 'req-success': 'Your request submitted successfully!', 'req-type-lbl': 'Leave Type *', 'req-start-lbl': 'Start Date *', 'req-end-lbl': 'End Date *', 'req-notes-lbl': 'Reason', 'req-attach-lbl': '📎 Attachment (optional)', 'req-submit-btn': 'Submit Request', 'profile-title': 'Edit My Info', 'profile-success': 'Update request submitted.', 'pf-name-lbl': 'Full Name', 'pf-phone-lbl': 'Phone', 'pf-email-lbl': 'Email', 'pf-idnum-lbl': 'National ID / Iqama', 'profile-requests-title': 'Previous Requests', 'loan-title': '💵 Loan Request', 'loan-success': 'Loan request submitted.', 'loan-amount-lbl': 'Amount *', 'loan-reason-lbl': 'Reason', 'loan-months-lbl': 'Months', 'loan-notes-lbl': 'Notes', 'loan-submit-btn': 'Submit', 'my-loans-title': 'Previous Loans', 'resign-title': '📤 Resignation', 'resign-success': 'Resignation submitted.', 'resign-date-lbl': 'Date *', 'resign-last-lbl': 'Last Day *', 'resign-reason-lbl': 'Reason', 'resign-notes-lbl': 'Notes', 'resign-submit-btn': 'Submit', 'complaint-title': '📢 Complaint / Suggestion', 'complaint-success': 'Request submitted.', 'complaint-type-lbl': 'Type *', 'complaint-subject-lbl': 'Subject *', 'complaint-details-lbl': 'Details *', 'complaint-anon-lbl': 'Submit anonymously', 'comp-attach-lbl': '📎 Attachment (optional)', 'complaint-submit-btn': 'Submit', 'my-complaints-title': 'My Requests', 'notif-emp-title': '🔔 Notifications', 'history-title': '📋 My History', 'pass-title': '🔑 Change Password', 'pass-old-lbl': 'Current Password *', 'pass-new-lbl': 'New Password *', 'pass-confirm-lbl': 'Confirm Password *', 'pass-success': '✅ Password changed!', 'pass-submit-btn': 'Change Password', 'lang-btn': 'عربي'} : {'l-id-lbl': 'رقم الهوية الوطنية / الإقامة *', 'l-pass-lbl': 'كلمة المرور *', 'l-btn': 'دخول', 'l-forgot-btn': 'نسيت كلمة المرور؟', 'l-note': 'أول مرة؟ أدخل رقم هويتك واضغط دخول لتعيين كلمة مرور', 'set-pass-title': 'أهلاً! حدد كلمة مرور لحسابك', 'l-newpass-lbl': 'كلمة المرور الجديدة *', 'l-confirmpass-lbl': 'تأكيد كلمة المرور *', 'l-setpass-btn': 'حفظ وادخل', 'forgot-title': 'استعادة كلمة المرور', 'l-forgot-id-lbl': 'رقم الهوية الوطنية / الإقامة *', 'l-forgot-phone-lbl': 'رقم الجوال المسجل *', 'l-reset-btn': 'تعيين كلمة مرور جديدة', 'l-back-btn': '← رجوع لتسجيل الدخول', 'portal-company': 'شركة يهماء لتأجير السيارات', 'portal-logout': 'خروج', 'stat-leaves-lbl': 'إجازاتي', 'stat-salary-lbl': 'الراتب الأساسي', 'stat-eosb-lbl': 'مخصص نهاية الخدمة', 'tab-info': '👤 بياناتي', 'tab-leaves': '📅 إجازاتي', 'tab-payroll': '💰 رواتبي', 'tab-tickets': '✈️ تذاكري', 'tab-request': '➕ طلب إجازة', 'tab-resignation': '📤 استقالة', 'tab-complaint': '📢 شكوى / اقتراح', 'tab-loan': '💵 طلب سلفة', 'tab-profile': '✏️ تعديل بياناتي', 'tab-notifications': '🔔 إشعاراتي', 'tab-history': '📋 سجل طلباتي', 'tab-password': '🔑 كلمة المرور', 'info-title': 'بياناتي الشخصية', 'leaves-title': 'سجل إجازاتي', 'th-l1': 'نوع الإجازة', 'th-l2': 'من', 'th-l3': 'إلى', 'th-l4': 'الأيام', 'th-l5': 'الحالة', 'payroll-title': 'سجل رواتبي', 'th-p1': 'الشهر', 'th-p2': 'الراتب الأساسي', 'th-p3': 'مكافآت', 'th-p4': 'خصومات', 'th-p5': 'الصافي', 'th-p6': 'الحالة', 'tickets-title': 'تذاكر طيراني', 'th-tk1': 'الوجهة', 'th-tk2': 'تاريخ السفر', 'th-tk3': 'تاريخ العودة', 'th-tk4': 'رقم التذكرة', 'req-title': '➕ طلب إجازة جديد', 'req-success': 'تم إرسال طلبك بنجاح! سيتم مراجعته من قِبل الإدارة.', 'req-type-lbl': 'نوع الإجازة *', 'req-start-lbl': 'تاريخ البداية *', 'req-end-lbl': 'تاريخ النهاية *', 'req-notes-lbl': 'سبب الإجازة', 'req-attach-lbl': '📎 مرفق (اختياري)', 'req-upload-progress': '⏳ جاري رفع المرفق...', 'req-submit-btn': 'إرسال الطلب', 'profile-title': 'تعديل بياناتي', 'profile-success': 'تم إرسال طلب التعديل بنجاح. سيتم مراجعته من قِبل الإدارة.', 'pf-name-lbl': 'الاسم الكامل', 'pf-phone-lbl': 'رقم الجوال', 'pf-email-lbl': 'البريد الإلكتروني', 'pf-idnum-lbl': 'رقم الهوية / الإقامة', 'profile-requests-title': 'طلبات التعديل السابقة', 'loan-title': '💵 طلب سلفة', 'loan-success': 'تم إرسال طلب السلفة بنجاح. سيتم مراجعته من قِبل الإدارة.', 'loan-amount-lbl': 'المبلغ المطلوب (ر.س) *', 'loan-reason-lbl': 'سبب السلفة', 'loan-months-lbl': 'عدد أشهر السداد', 'loan-notes-lbl': 'ملاحظات', 'loan-submit-btn': 'إرسال طلب السلفة', 'my-loans-title': 'طلبات السلفة السابقة', 'resign-title': '📤 تقديم طلب استقالة', 'resign-success': 'تم إرسال طلب استقالتك بنجاح. سيتم مراجعته من قِبل الإدارة.', 'resign-date-lbl': 'تاريخ الاستقالة *', 'resign-last-lbl': 'آخر يوم عمل *', 'resign-reason-lbl': 'سبب الاستقالة', 'resign-notes-lbl': 'ملاحظات إضافية', 'resign-submit-btn': 'تقديم طلب الاستقالة', 'complaint-title': '📢 شكوى / اقتراح', 'complaint-success': 'تم إرسال طلبك بنجاح. سيتم مراجعته من قِبل الإدارة.', 'complaint-type-lbl': 'نوع الطلب *', 'complaint-subject-lbl': 'الموضوع *', 'complaint-details-lbl': 'التفاصيل *', 'complaint-anon-lbl': 'تقديم بشكل مجهول (لن يظهر اسمك)', 'comp-attach-lbl': '📎 مرفق (اختياري)', 'comp-upload-progress': '⏳ جاري رفع المرفق...', 'complaint-submit-btn': 'إرسال', 'my-complaints-title': 'طلباتي السابقة', 'notif-emp-title': 'إشعاراتي', 'history-title': 'سجل جميع طلباتي', 'pass-title': '🔑 تغيير كلمة المرور', 'pass-old-lbl': 'كلمة المرور الحالية *', 'pass-new-lbl': 'كلمة المرور الجديدة *', 'pass-confirm-lbl': 'تأكيد كلمة المرور الجديدة *', 'pass-success': '✅ تم تغيير كلمة المرور بنجاح!', 'pass-submit-btn': 'تغيير كلمة المرور'};
+  
+  Object.entries(allTxt).forEach(function([id, txt]) {
+    if(!txt) return;
     const el = document.getElementById(id);
-    if(el) {
-      if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t[id];
-      else el.textContent = t[id];
-    }
+    if(!el) return;
+    if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.placeholder = txt;
+    else el.textContent = txt;
   });
 
-  // Update form labels with data-lang
-  document.querySelectorAll('[data-ar]').forEach(el => {
-    const ar = el.getAttribute('data-ar');
-    const en = el.getAttribute('data-en');
-    if(isEn && en) el.textContent = en;
-    else if(!isEn && ar) el.textContent = ar;
+  // Placeholders
+  const allPh = isEn ? {'l-id-input': 'National ID / Iqama number', 'l-pass-input': 'Enter your password', 'l-new-pass': 'New password (min 8 chars)', 'l-confirm-pass': 'Confirm new password', 'l-forgot-id': 'National ID / Iqama', 'l-forgot-phone': 'Registered phone number', 'req-notes': 'Reason for leave (optional)', 'loan-amount': 'Amount in SAR', 'loan-reason': 'Reason for loan', 'loan-notes': 'Additional notes', 'resign-reason': 'Reason for resignation', 'resign-notes': 'Additional notes', 'complaint-subject': 'Subject', 'complaint-details': 'Write your complaint or suggestion...'} : {'emp-id-input': 'أدخل رقم هويتك', 'emp-pass-input': 'أدخل كلمة مرورك', 'new-pass-input': '6 أحرف على الأقل', 'confirm-pass-input': 'أعد كتابة كلمة المرور', 'forgot-id-input': 'أدخل رقم هويتك', 'req-notes': 'اختياري', 'loan-notes': 'اختياري', 'resign-notes': 'اختياري', 'complaint-subject': 'موضوع الشكوى أو الاقتراح', 'complaint-details': 'اكتب تفاصيل شكواك أو اقتراحك هنا...', 'pass-old': 'أدخل كلمة المرور الحالية', 'pass-new': '8 أحرف على الأقل', 'pass-confirm': 'أعد كتابة كلمة المرور الجديدة'};
+  Object.entries(allPh).forEach(function([id, ph]) {
+    const el = document.getElementById(id);
+    if(el) el.placeholder = ph;
   });
 
-  // Update info section labels
-  const infoLabels = isEn ? {
-    'الاسم الكامل':'Full Name','النوع':'Type','الوظيفة / التخصص':'Job / Specialty',
-    'الإدارة / الجنسية':'Dept / Nationality','رقم الهوية / الإقامة':'ID / Iqama',
-    'رقم الجوال':'Phone','البريد الإلكتروني':'Email','تاريخ الانضمام':'Join Date',
-    'آخر إجازة':'Last Leave','آخر تذكرة طيران':'Last Ticket',
-    'مكان العمل':'Workplace','رقم الحساب البنكي':'Bank Account'
-  } : {
-    'Full Name':'الاسم الكامل','Type':'النوع','Job / Specialty':'الوظيفة / التخصص',
-    'Dept / Nationality':'الإدارة / الجنسية','ID / Iqama':'رقم الهوية / الإقامة',
-    'Phone':'رقم الجوال','Email':'البريد الإلكتروني','Join Date':'تاريخ الانضمام',
-    'Last Leave':'آخر إجازة','Last Ticket':'آخر تذكرة طيران',
-    'Workplace':'مكان العمل','Bank Account':'رقم الحساب البنكي'
-  };
+  // Fix number format
+  const fmtEl = document.getElementById('stat-salary');
+  if(fmtEl && window.currentEmp) {
+    const sal = currentEmp.basic_salary || currentEmp.daily_wage || 0;
+    fmtEl.textContent = sal ? Math.round(sal).toLocaleString(isEn?'en-US':'ar-SA') : '—';
+  }
 
-  // Update info labels
-  document.querySelectorAll('.info-label').forEach(el => {
-    const txt = el.textContent.trim();
-    if(infoLabels[txt]) el.textContent = infoLabels[txt];
-  });
-
-  // Reload current tab content to refresh
+  // Reload current tab to refresh dynamic content
   const activeTab = document.querySelector('.tab.active');
-  if(activeTab) {
-    const tabId = activeTab.id?.replace('tab-','');
-    const loaders = {info:loadEmpInfo,leaves:loadEmpLeaves,payroll:loadEmpPayroll,tickets:loadEmpTickets};
+  if(activeTab && currentEmp) {
+    const tabId = activeTab.id ? activeTab.id.replace('tab-','') : '';
+    const loaders = {
+      info:loadEmpInfo, leaves:loadEmpLeaves, payroll:loadEmpPayroll,
+      tickets:loadEmpTickets, notifications:loadEmpNotifications, history:loadEmpHistory
+    };
     if(loaders[tabId]) loaders[tabId]();
   }
 }
