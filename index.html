@@ -542,7 +542,7 @@ let currentEmp = null;
 const now = new Date();
 
 // HELPERS
-const fmt = n => Math.round(n||0).toLocaleString('ar-SA') + ' ر.س';
+const fmt = n => Math.round(n||0).toLocaleString('ar-SA');
 const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-SA') : '—';
 function bst(s) {
   const m = {pending:'<span class="badge ba">معلق</span>',approved:'<span class="badge bg">مقبول</span>',rejected:'<span class="badge br">مرفوض</span>',paid:'<span class="badge bg">مدفوع</span>'};
@@ -596,7 +596,10 @@ async function doLogin() {
   showPortal();
   // Show basic salary immediately
   const salEl = document.getElementById('stat-salary');
-  if(salEl) salEl.textContent = data.basic_salary ? Math.round(data.basic_salary).toLocaleString('ar-SA') + ' ر.س' : (data.daily_wage ? Math.round(data.daily_wage).toLocaleString('ar-SA') + ' ر.س' : '—');
+  if(salEl) {
+    const sal = data.basic_salary || data.daily_wage || 0;
+    salEl.textContent = sal ? Math.round(sal).toLocaleString('ar-SA') : '—';
+  }
 }
 
 async function setPassword() {
