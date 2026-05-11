@@ -698,17 +698,18 @@ async function loadAllData() {
 function loadEmpInfo() {
   const e = currentEmp;
   const grid = document.getElementById('emp-info-grid');
+  const isEn = lang==='en';
   const fields = [
-    {lbl:'الاسم الكامل', val: e.name},
-    {lbl:'النوع', val: e.person_type==='worker'?'عامل':'موظف'},
-    {lbl:'الوظيفة / التخصص', val: e.job_title||e.specialization||'—'},
-    {lbl:'الإدارة / الجنسية', val: e.department||e.nationality||'—'},
-    {lbl:'رقم الهوية / الإقامة', val: e.id_number||'—'},
-    {lbl:'رقم الجوال', val: e.phone||'—'},
-    {lbl:'البريد الإلكتروني', val: e.email||'—'},
-    {lbl:'تاريخ الانضمام', val: fmtDate(e.join_date)},
-    {lbl:'آخر إجازة', val: fmtDate(e.last_leave_date)},
-    {lbl:'آخر تذكرة طيران', val: e.last_ticket_date?(fmtDate(e.last_ticket_date)+(e.last_ticket_destination?' ('+e.last_ticket_destination+')'  :'')):'—'},
+    {lbl:isEn?'Full Name':'الاسم الكامل', val: e.name},
+    {lbl:isEn?'Type':'النوع', val: e.person_type==='worker'?(isEn?'Worker':'عامل'):(isEn?'Employee':'موظف')},
+    {lbl:isEn?'Job / Specialty':'الوظيفة / التخصص', val: e.job_title||e.specialization||'—'},
+    {lbl:isEn?'Dept / Nationality':'الإدارة / الجنسية', val: e.department||e.nationality||'—'},
+    {lbl:isEn?'ID / Iqama':'رقم الهوية / الإقامة', val: e.id_number||'—'},
+    {lbl:isEn?'Phone':'رقم الجوال', val: e.phone||'—'},
+    {lbl:isEn?'Email':'البريد الإلكتروني', val: e.email||'—'},
+    {lbl:isEn?'Join Date':'تاريخ الانضمام', val: fmtDate(e.join_date)},
+    {lbl:isEn?'Last Leave':'آخر إجازة', val: fmtDate(e.last_leave_date)},
+    {lbl:isEn?'Last Ticket':'آخر تذكرة طيران', val: e.last_ticket_date?(fmtDate(e.last_ticket_date)+(e.last_ticket_destination?' ('+e.last_ticket_destination+')'  :'')):'—'},
   ];
   grid.innerHTML = fields.map(f => `<div class="info-item"><div class="info-label">${f.lbl}</div><div class="info-value">${f.val}</div></div>`).join('');
 }
