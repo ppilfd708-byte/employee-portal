@@ -580,7 +580,7 @@ async function doLogin() {
     tempEmp = data;
     document.getElementById('step1').style.display = 'none';
     document.getElementById('step2').style.display = 'block';
-    document.getElementById('set-pass-name').textContent = 'مرحباً ' + data.name;
+    document.getElementById('set-pass-name').textContent = (lang==='ar'?'مرحباً ':'Welcome, ') + data.name;
     return;
   }
 
@@ -717,7 +717,7 @@ function loadEmpInfo() {
 async function loadEmpLeaves() {
   const {data} = await sb.from('leaves').select('*').eq('employee_id', currentEmp.id).order('created_at',{ascending:false});
   const tbody = document.getElementById('emp-leaves-table');
-  if(!data||!data.length) { tbody.innerHTML='<tr><td colspan="5" class="empty">لا توجد إجازات مسجلة</td></tr>'; document.getElementById('stat-leaves').textContent='0'; return; }
+  if(!data||!data.length) { tbody.innerHTML=`<tr><td colspan="5" class="empty">${lang==='ar'?'لا توجد إجازات مسجلة':'No leaves recorded'}</td></tr>`; document.getElementById('stat-leaves').textContent='0'; return; }
   document.getElementById('stat-leaves').textContent = data.length;
   tbody.innerHTML = data.map(r => `<tr>
     <td>${r.leave_type||'—'}</td>
@@ -739,7 +739,7 @@ async function loadEmpPayroll() {
   
   if(!data||!data.length) {
     // Show basic salary info even if no payroll records
-    if(statSalary) statSalary.textContent = basicSalary ? fmt(basicSalary) + ' ر.س' : '—';
+    if(statSalary) statSalary.textContent = basicSalary ? fmt(basicSalary) + (lang==='ar'?' ر.س':' SAR') : '—';
     tbody.innerHTML = basicSalary ? `<tr>
       <td style="font-weight:500;color:#64748B;">الراتب الأساسي الحالي</td>
       <td style="font-weight:700;color:#0D9488;">${fmt(basicSalary)} ر.س</td>
@@ -772,7 +772,7 @@ async function loadEmpPayroll() {
 async function loadEmpTickets() {
   const {data} = await sb.from('flight_tickets').select('*').eq('employee_id', currentEmp.id).order('departure_date',{ascending:false});
   const tbody = document.getElementById('emp-tickets-table');
-  if(!data||!data.length) { tbody.innerHTML='<tr><td colspan="4" class="empty">لا توجد تذاكر مسجلة</td></tr>'; return; }
+  if(!data||!data.length) { tbody.innerHTML=`<tr><td colspan="4" class="empty">${lang==='ar'?'لا توجد تذاكر مسجلة':'No tickets recorded'}</td></tr>`; return; }
   tbody.innerHTML = data.map(r => `<tr>
     <td style="font-weight:500;">${r.destination||'—'}</td>
     <td>${fmtDate(r.departure_date)}</td>
@@ -785,7 +785,7 @@ async function loadEmpTickets() {
 function loadEmpEOSB() {
   const e = currentEmp;
   if(!e.join_date || !e.basic_salary) {
-    document.getElementById('eosb-result').innerHTML = '<div class="empty">لا توجد بيانات كافية لحساب المخصص</div>';
+    document.getElementById('eosb-result').innerHTML = `<div class="empty">${lang==='ar'?'لا توجد بيانات كافية لحساب المخصص':'Insufficient data to calculate allowance'}</div>`;
     document.getElementById('stat-eosb').textContent = '—';
     return;
   }
@@ -816,9 +816,9 @@ async function submitLeaveRequest() {
   const err = document.getElementById('req-err');
   err.textContent = '';
 
-  if(!type){err.textContent='نوع الإجازة مطلوب';return;}
-  if(!start||!end){err.textContent='التاريخ مطلوب';return;}
-  if(new Date(end)<new Date(start)){err.textContent='تاريخ النهاية يجب أن يكون بعد البداية';return;}
+  if(!type){err.textContent=lang==='ar'?'نوع الإجازة مطلوب':'Leave type is required';return;}
+  if(!start||!end){err.textContent=lang==='ar'?'التاريخ مطلوب':'Date is required';return;}
+  if(new Date(end)<new Date(start)){err.textContent=lang==='ar'?'تاريخ النهاية يجب أن يكون بعد البداية':'End date must be after start date';return;}
 
   const days = Math.round((new Date(end)-new Date(start))/(1000*60*60*24))+1;
 
@@ -850,7 +850,7 @@ async function submitLeaveRequest() {
     attachment_url: attachmentUrl
   });
 
-  if(error){err.textContent='حدث خطأ، حاول مرة أخرى';return;}
+  if(error){err.textContent=lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again';return;}
   await sb.from('employees').update({last_leave_date: start}).eq('id', currentEmp.id);
   document.getElementById('req-success').style.display='block';
   document.getElementById('req-type').value='';
@@ -871,8 +871,8 @@ async function submitResignation() {
   const err = document.getElementById('resign-err');
   err.textContent = '';
 
-  if(!date || !last) { err.textContent = 'التاريخ مطلوب'; return; }
-  if(new Date(last) < new Date(date)) { err.textContent = 'آخر يوم عمل يجب أن يكون بعد تاريخ الاستقالة'; return; }
+  if(!date || !last) { err.textContent = lang==='ar'?'التاريخ مطلوب':'Date is required'; return; }
+  if(new Date(last) < new Date(date)) { err.textContent = lang==='ar'?'آخر يوم عمل يجب أن يكون بعد تاريخ الاستقالة':'Last working day must be after resignation date'; return; }
 
   if(!confirm('هل أنت متأكد من تقديم طلب الاستقالة؟ سيتم إشعار الإدارة فوراً.')) return;
 
@@ -886,7 +886,7 @@ async function submitResignation() {
     status: 'pending'
   });
 
-  if(error) { err.textContent = 'حدث خطأ، حاول مرة أخرى'; return; }
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again'; return; }
 
   document.getElementById('resign-success').style.display = 'block';
   document.getElementById('resign-date').value = '';
@@ -905,9 +905,9 @@ async function submitComplaint() {
   const err = document.getElementById('complaint-err');
   err.textContent = '';
 
-  if(!type) { err.textContent = 'نوع الطلب مطلوب'; return; }
-  if(!subject) { err.textContent = 'الموضوع مطلوب'; return; }
-  if(!details) { err.textContent = 'التفاصيل مطلوبة'; return; }
+  if(!type) { err.textContent = lang==='ar'?'نوع الطلب مطلوب':'Request type is required'; return; }
+  if(!subject) { err.textContent = lang==='ar'?'الموضوع مطلوب':'Subject is required'; return; }
+  if(!details) { err.textContent = lang==='ar'?'التفاصيل مطلوبة':'Details are required'; return; }
 
   // Upload attachment if exists
   let compUrl = null;
@@ -934,7 +934,7 @@ async function submitComplaint() {
     attachment_url: compUrl
   });
 
-  if(error) { err.textContent = 'حدث خطأ، حاول مرة أخرى'; return; }
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again'; return; }
   document.getElementById('complaint-success').style.display = 'block';
   document.getElementById('complaint-type').value = '';
   document.getElementById('complaint-subject').value = '';
@@ -951,7 +951,7 @@ async function loadComplaints() {
     .select('*').eq('employee_id', currentEmp.id)
     .order('created_at', {ascending: false});
   
-  if(!data || !data.length) { listEl.innerHTML = '<div class="empty">لا توجد طلبات سابقة</div>'; return; }
+  if(!data || !data.length) { listEl.innerHTML = `<div class="empty">${lang==='ar'?'لا توجد طلبات سابقة':'No previous requests'}</div>`; return; }
   
   const typeMap = {complaint:'شكوى',suggestion:'اقتراح',inquiry:'استفسار',other:'أخرى'};
   listEl.innerHTML = data.map(c => `
@@ -974,7 +974,7 @@ function calcLoan() {
   const months = parseInt(document.getElementById('loan-months').value)||1;
   if(amount > 0) {
     const monthly = Math.round(amount/months);
-    document.getElementById('loan-monthly').textContent = monthly.toLocaleString('ar-SA') + ' ر.س';
+    document.getElementById('loan-monthly').textContent = monthly.toLocaleString(lang==='en'?'en-US':'ar-SA') + (lang==='ar'?' ر.س':' SAR');
     document.getElementById('loan-calc').style.display = 'block';
   }
 }
@@ -987,7 +987,7 @@ async function submitLoan() {
   const err = document.getElementById('loan-err');
   err.textContent = '';
 
-  if(!amount || amount <= 0) { err.textContent = 'المبلغ مطلوب'; return; }
+  if(!amount || amount <= 0) { err.textContent = lang==='ar'?'المبلغ مطلوب':'Amount is required'; return; }
 
   const {error} = await sb.from('loans').insert({
     employee_id: currentEmp.id,
@@ -1000,7 +1000,7 @@ async function submitLoan() {
     status: 'pending'
   });
 
-  if(error) { err.textContent = 'حدث خطأ، حاول مرة أخرى'; return; }
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again'; return; }
 
   document.getElementById('loan-success').style.display = 'block';
   document.getElementById('loan-amount').value = '';
@@ -1017,7 +1017,7 @@ async function loadLoansHistory() {
   const {data} = await sb.from('loans').select('*')
     .eq('employee_id', currentEmp.id).order('created_at', {ascending: false});
   
-  if(!data || !data.length) { listEl.innerHTML = '<div class="empty">لا توجد طلبات سابقة</div>'; return; }
+  if(!data || !data.length) { listEl.innerHTML = `<div class="empty">${lang==='ar'?'لا توجد طلبات سابقة':'No previous requests'}</div>`; return; }
   
   listEl.innerHTML = data.map(l => `
     <div style="background:#F8FAFC;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid #E2E8F0;">
@@ -1045,10 +1045,10 @@ async function requestUpdate(field, inputId, fieldLabel) {
   const err = document.getElementById('profile-err');
   err.textContent = '';
 
-  if(!newValue) { err.textContent = 'الحقل لا يمكن أن يكون فارغاً'; return; }
+  if(!newValue) { err.textContent = lang==='ar'?'الحقل لا يمكن أن يكون فارغاً':'Field cannot be empty'; return; }
   
   const oldValue = currentEmp[field] || '';
-  if(newValue === oldValue) { err.textContent = 'القيمة الجديدة نفس القديمة!'; return; }
+  if(newValue === oldValue) { err.textContent = lang==='ar'?'القيمة الجديدة نفس القديمة!':'New value is the same as old value!'; return; }
 
   const {error} = await sb.from('profile_updates').insert({
     employee_id: currentEmp.id,
@@ -1059,7 +1059,7 @@ async function requestUpdate(field, inputId, fieldLabel) {
     status: 'pending'
   });
 
-  if(error) { err.textContent = 'حدث خطأ، حاول مرة أخرى'; return; }
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again'; return; }
 
   document.getElementById('profile-success').style.display = 'block';
   setTimeout(() => document.getElementById('profile-success').style.display='none', 4000);
@@ -1072,7 +1072,7 @@ async function loadProfileRequests() {
     .select('*').eq('employee_id', currentEmp.id)
     .order('created_at', {ascending: false});
   
-  if(!data || !data.length) { listEl.innerHTML = '<div class="empty">لا توجد طلبات تعديل سابقة</div>'; return; }
+  if(!data || !data.length) { listEl.innerHTML = `<div class="empty">${lang==='ar'?'لا توجد طلبات تعديل سابقة':'No previous update requests'}</div>`; return; }
   
   listEl.innerHTML = data.map(r => `
     <div style="background:#F8FAFC;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid #E2E8F0;">
@@ -1231,7 +1231,7 @@ async function loadEmpNotifications() {
     else if(l.status==='rejected') notifs.push({ico:'❌',txt:'تم رفض طلب سلفتك',date:l.updated_at,color:'#FEE2E2',tc:'#991B1B'});
   });
   notifs.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(!notifs.length){el.innerHTML='<div style="text-align:center;padding:30px;color:#94A3B8;">🔔 لا توجد إشعارات</div>';return;}
+  if(!notifs.length){el.innerHTML = `<div style="text-align:center;padding:30px;color:#94A3B8;">🔔 ${lang==='ar'?'لا توجد إشعارات':'No notifications'}</div>`;return;}
   el.innerHTML=notifs.map(n=>`<div style="display:flex;gap:12px;padding:12px;background:${n.color};border-radius:10px;margin-bottom:8px;">
     <span style="font-size:20px;">${n.ico}</span>
     <div><div style="font-size:13px;color:${n.tc};font-weight:500;">${n.txt}</div>
@@ -1274,13 +1274,13 @@ async function changePassword() {
   const conf=document.getElementById('pass-confirm').value.trim();
   const err=document.getElementById('pass-err');
   err.textContent='';
-  if(!oldP||!newP||!conf){err.textContent='يرجى ملء جميع الحقول';return;}
-  if(newP.length<8){err.textContent='كلمة المرور يجب أن تكون 8 أحرف على الأقل';return;}
-  if(newP!==conf){err.textContent='كلمة المرور الجديدة غير متطابقة';return;}
+  if(!oldP||!newP||!conf){err.textContent=lang==='ar'?'يرجى ملء جميع الحقول':'Please fill all required fields';return;}
+  if(newP.length<8){err.textContent=lang==='ar'?'كلمة المرور يجب أن تكون 8 أحرف على الأقل':'Password must be at least 8 characters';return;}
+  if(newP!==conf){err.textContent=lang==='ar'?'كلمة المرور الجديدة غير متطابقة':'New passwords do not match';return;}
   const {data:emp}=await sb.from('employees').select('portal_password').eq('id',currentEmp.id).single();
-  if(!emp||emp.portal_password!==oldP){err.textContent='كلمة المرور الحالية غير صحيحة';return;}
+  if(!emp||emp.portal_password!==oldP){err.textContent=lang==='ar'?'كلمة المرور الحالية غير صحيحة':'Current password is incorrect';return;}
   const {error}=await sb.from('employees').update({portal_password:newP}).eq('id',currentEmp.id);
-  if(error){err.textContent='حدث خطأ، حاول مرة أخرى';return;}
+  if(error){err.textContent=lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again';return;}
   document.getElementById('pass-success').style.display='block';
   document.getElementById('pass-old').value='';
   document.getElementById('pass-new').value='';
