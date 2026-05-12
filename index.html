@@ -85,6 +85,98 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
 .eosb-total{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700;color:#0D9488;border-top:2px solid #E2E8F0;margin-top:4px;}
 /* LANG */
 .lang-btn{position:fixed;bottom:20px;left:20px;background:#0D9488;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);z-index:100;}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  body { font-size: 13px; }
+  
+  .portal-header {
+    padding: 10px 14px !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .portal-header .logo-text { font-size: 16px !important; }
+  
+  .portal-body {
+    padding: 10px !important;
+    max-width: 100% !important;
+  }
+
+  /* Stat cards */
+  .stats-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .stat { padding: 10px 8px !important; }
+  .stat-num { font-size: 20px !important; }
+  .stat-lbl { font-size: 10px !important; }
+
+  /* Tabs - horizontal scroll */
+  .tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    padding-bottom: 4px !important;
+  }
+  .tab {
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Info grid */
+  .info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Tables */
+  .tbl {
+    font-size: 11px !important;
+  }
+  .info-card {
+    padding: 12px !important;
+    overflow-x: auto !important;
+  }
+  table { min-width: 420px; }
+
+  /* Forms */
+  .leave-form {
+    padding: 14px !important;
+  }
+  .fr input, .fr select, .fr textarea {
+    font-size: 13px !important;
+  }
+  .submit-btn {
+    font-size: 13px !important;
+    padding: 10px !important;
+  }
+
+  /* Lang button */
+  .lang-btn {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr 1fr 1fr !important;
+  }
+  .stat-num { font-size: 18px !important; }
+  .portal-header .user-name { 
+    font-size: 12px !important;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -760,7 +852,7 @@ async function loadEmpPayroll() {
     return `<tr>
       <td style="font-weight:500;">${monthNames[r.month]||r.month} ${r.year}</td>
       <td>${fmt(r.basic_salary)} ر.س</td>
-      <td style="color:#16A34A;">${r.bonuses?fmt(r.bonuses)+' ر.س':'—'}</td>
+      <td style="color:#16A34A;">${r.bonuses?fmt(r.bonuses)+' '+(lang==\'en\'?\'SAR\':\'ر.س\'):'—'}</td>
       <td style="color:#DC2626;">${r.deductions?fmt(r.deductions)+' ر.س':'—'}</td>
       <td style="color:#DC2626;">${r.insurance?fmt(r.insurance)+' ر.س':'—'}</td>
       <td style="font-weight:700;color:#0D9488;">${fmt(netSal)} ر.س</td>
@@ -800,7 +892,7 @@ function loadEmpEOSB() {
   document.getElementById('stat-eosb').textContent = fmt(total);
   document.getElementById('eosb-result').innerHTML = `
     <div class="eosb-row"><span style="color:#64748B;">مدة الخدمة</span><span style="font-weight:500;">${yInt} سنة ${mRem} أشهر</span></div>
-    <div class="eosb-row"><span style="color:#64748B;">الراتب الأساسي</span><span style="font-weight:500;">${fmt(e.basic_salary)}</span></div>
+    <div class="eosb-row"><span style="color:#64748B;">${lang==='en'?'Basic Salary':'الراتب الأساسي'}</span><span style="font-weight:500;">${fmt(e.basic_salary)} ${lang==='en'?'SAR':'ر.س'}</span></div>
     <div class="eosb-row"><span style="color:#64748B;">مخصص أول 5 سنوات</span><span style="font-weight:500;">${fmt(f5)}</span></div>
     <div class="eosb-row"><span style="color:#64748B;">مخصص بعد 5 سنوات</span><span style="font-weight:500;">${fmt(a5)}</span></div>
     <div class="eosb-total"><span>إجمالي المخصص المتراكم</span><span>${fmt(total)}</span></div>
@@ -1023,10 +1115,10 @@ async function loadLoansHistory() {
   listEl.innerHTML = data.map(l => `
     <div style="background:#F8FAFC;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid #E2E8F0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:13px;font-weight:600;color:#0D9488;">${Math.round(l.amount||0).toLocaleString('ar-SA')} ر.س</div>
+        <div style="font-size:13px;font-weight:600;color:#0D9488;">${Math.round(l.amount||0).toLocaleString(lang==='en'?'en-US':'ar-SA')} ${lang==='en'?'SAR':'ر.س'}</div>
         <span class="badge ${l.status==='approved'?'bg':l.status==='rejected'?'br':'ba'}">${l.status==='approved'?'مقبول':l.status==='rejected'?'مرفوض':'معلق'}</span>
       </div>
-      <div style="font-size:11px;color:#64748B;margin-top:4px;">${l.reason||'—'} · ${l.repayment_months} أشهر · قسط: ${Math.round(l.monthly_deduction||0).toLocaleString('ar-SA')} ر.س/شهر</div>
+      <div style="font-size:11px;color:#64748B;margin-top:4px;">${l.reason||'—'} · ${l.repayment_months} أشهر · قسط: ${Math.round(l.monthly_deduction||0).toLocaleString(lang==='en'?'en-US':'ar-SA')} ${lang==='en'?'SAR/mo':'ر.س/شهر'}</div>
     </div>
   `).join('');
 }
@@ -1159,6 +1251,96 @@ function toggleLang() {
   Object.entries(allPh).forEach(function([id, ph]) {
     const el = document.getElementById(id);
     if(el) el.placeholder = ph;
+  });
+
+  // Translate select options
+  const selectTranslations = {
+    'req-type': isEn ? [
+      ['', '-- Select --'],
+      ['إجازة سنوية', 'Annual Leave'],
+      ['إجازة مرضية', 'Sick Leave'],
+      ['إجازة اضطرارية', 'Emergency Leave'],
+      ['إجازة أمومة', 'Maternity Leave'],
+      ['إجازة عمرة', 'Umrah Leave'],
+      ['إجازة حج', 'Hajj Leave'],
+      ['أخرى', 'Other']
+    ] : [
+      ['', '-- اختر --'],
+      ['إجازة سنوية', 'إجازة سنوية'],
+      ['إجازة مرضية', 'إجازة مرضية'],
+      ['إجازة اضطرارية', 'إجازة اضطرارية'],
+      ['إجازة أمومة', 'إجازة أمومة'],
+      ['إجازة عمرة', 'إجازة عمرة'],
+      ['إجازة حج', 'إجازة حج'],
+      ['أخرى', 'أخرى']
+    ],
+    'loan-reason': isEn ? [
+      ['', '-- Select --'],
+      ['ظروف طارئة', 'Emergency'],
+      ['مصاريف طبية', 'Medical Expenses'],
+      ['مناسبة اجتماعية', 'Social Occasion'],
+      ['مصاريف تعليم', 'Education Expenses'],
+      ['أخرى', 'Other']
+    ] : [
+      ['', '-- اختر --'],
+      ['ظروف طارئة', 'ظروف طارئة'],
+      ['مصاريف طبية', 'مصاريف طبية'],
+      ['مناسبة اجتماعية', 'مناسبة اجتماعية'],
+      ['مصاريف تعليم', 'مصاريف تعليم'],
+      ['أخرى', 'أخرى']
+    ],
+    'loan-months': isEn ? [
+      ['1', '1 Month'],
+      ['2', '2 Months'],
+      ['3', '3 Months'],
+      ['6', '6 Months'],
+      ['12', '1 Year']
+    ] : [
+      ['1', 'شهر واحد'],
+      ['2', 'شهرين'],
+      ['3', '3 أشهر'],
+      ['6', '6 أشهر'],
+      ['12', 'سنة']
+    ],
+    'resign-reason': isEn ? [
+      ['', '-- Select --'],
+      ['ظروف شخصية', 'Personal Reasons'],
+      ['فرصة عمل أفضل', 'Better Opportunity'],
+      ['الانتقال لمدينة أخرى', 'Relocation'],
+      ['إتمام الدراسة', 'Continuing Studies'],
+      ['ظروف صحية', 'Health Reasons'],
+      ['أخرى', 'Other']
+    ] : [
+      ['', '-- اختر --'],
+      ['ظروف شخصية', 'ظروف شخصية'],
+      ['فرصة عمل أفضل', 'فرصة عمل أفضل'],
+      ['الانتقال لمدينة أخرى', 'الانتقال لمدينة أخرى'],
+      ['إتمام الدراسة', 'إتمام الدراسة'],
+      ['ظروف صحية', 'ظروف صحية'],
+      ['أخرى', 'أخرى']
+    ],
+    'complaint-type': isEn ? [
+      ['', '-- Select --'],
+      ['complaint', 'Complaint'],
+      ['suggestion', 'Suggestion'],
+      ['inquiry', 'Inquiry'],
+      ['other', 'Other']
+    ] : [
+      ['', '-- اختر --'],
+      ['complaint', 'شكوى'],
+      ['suggestion', 'اقتراح'],
+      ['inquiry', 'استفسار'],
+      ['other', 'أخرى']
+    ]
+  };
+  Object.entries(selectTranslations).forEach(([selId, opts]) => {
+    const sel = document.getElementById(selId);
+    if(!sel) return;
+    const curVal = sel.value;
+    sel.querySelectorAll('option').forEach((opt, i) => {
+      if(opts[i]) opt.textContent = opts[i][1];
+    });
+    sel.value = curVal;
   });
 
   // Fix number format
