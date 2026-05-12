@@ -834,12 +834,12 @@ async function loadEmpPayroll() {
     // Show basic salary info even if no payroll records
     if(statSalary) statSalary.textContent = basicSalary ? fmt(basicSalary) + (lang==='ar'?' ر.س':' SAR') : '—';
     tbody.innerHTML = basicSalary ? `<tr>
-      <td style="font-weight:500;color:#64748B;">الراتب الأساسي الحالي</td>
-      <td style="font-weight:700;color:#0D9488;">${fmt(basicSalary)} ر.س</td>
+      <td style="font-weight:500;color:#64748B;">${lang==='en'?'Current Basic Salary':'الراتب الأساسي الحالي'}</td>
+      <td style="font-weight:700;color:#0D9488;">${fmt(basicSalary)} ${lang==='en'?'SAR':'ر.س'}</td>
       <td>—</td><td>—</td><td>—</td>
-      <td style="font-weight:700;color:#0D9488;">${fmt(basicSalary)} ر.س</td>
-      <td><span class="badge bb">راتب أساسي</span></td>
-    </tr>` : '<tr><td colspan="7" class="empty">لا توجد رواتب مسجلة بعد</td></tr>';
+      <td style="font-weight:700;color:#0D9488;">${fmt(basicSalary)} ${lang==='en'?'SAR':'ر.س'}</td>
+      <td><span class="badge bb">${lang==='en'?'Basic Salary':'راتب أساسي'}</span></td>
+    </tr>` : `<tr><td colspan="7" class="empty">${lang==='en'?'No payroll records yet':'لا توجد رواتب مسجلة بعد'}</td></tr>`;
     return;
   }
   
