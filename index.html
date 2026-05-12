@@ -851,12 +851,12 @@ async function loadEmpPayroll() {
     const monthNames = ['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
     return `<tr>
       <td style="font-weight:500;">${monthNames[r.month]||r.month} ${r.year}</td>
-      <td>${fmt(r.basic_salary)} ر.س</td>
-      <td style="color:#16A34A;">${r.bonuses?fmt(r.bonuses)+' '+(lang==\'en\'?\'SAR\':\'ر.س\'):'—'}</td>
-      <td style="color:#DC2626;">${r.deductions?fmt(r.deductions)+' ر.س':'—'}</td>
-      <td style="color:#DC2626;">${r.insurance?fmt(r.insurance)+' ر.س':'—'}</td>
-      <td style="font-weight:700;color:#0D9488;">${fmt(netSal)} ر.س</td>
-      <td><span class="badge ${r.status==='paid'?'bg':'bb'}">${r.status==='paid'?'✅ مدفوع':'⏳ معلق'}</span></td>
+      <td>${fmt(r.basic_salary)} ${lang==='en'?'SAR':'ر.س'}</td>
+      <td style="color:#16A34A;">${r.bonuses?fmt(r.bonuses)+' '+(lang==='en'?'SAR':'ر.س'):'—'}</td>
+      <td style="color:#DC2626;">${r.deductions?fmt(r.deductions)+' '+(lang==='en'?'SAR':'ر.س'):'—'}</td>
+      <td style="color:#DC2626;">${r.insurance?fmt(r.insurance)+' '+(lang==='en'?'SAR':'ر.س'):'—'}</td>
+      <td style="font-weight:700;color:#0D9488;">${fmt(netSal)} ${lang==='en'?'SAR':'ر.س'}</td>
+      <td><span class="badge ${r.status==='paid'?'bg':'bb'}">${r.status==='paid'?(lang==='en'?'✅ Paid':'✅ مدفوع'):(lang==='en'?'⏳ Pending':'⏳ معلق')}</span></td>
     </tr>`;
   }).join('');
 }
