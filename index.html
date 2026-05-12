@@ -633,6 +633,24 @@ const sb = supabase.createClient(
 let currentEmp = null;
 const now = new Date();
 
+// Restore session on refresh
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('yahma_emp');
+  if(saved) {
+    try {
+      currentEmp = JSON.parse(saved);
+      showPortal();
+      const salEl = document.getElementById('stat-salary');
+      if(salEl) {
+        const sal = currentEmp.basic_salary || currentEmp.daily_wage || 0;
+        salEl.textContent = sal ? Math.round(sal).toLocaleString('en-US') : '—';
+      }
+    } catch(e) {
+      sessionStorage.removeItem('yahma_emp');
+    }
+  }
+});
+
 // HELPERS
 const fmt = n => Math.round(n||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab');
 const fmtDate = d => d ? new Date(d).toLocaleDateString(lang==='en'?'en-US':'ar-SA') : '—';
@@ -685,6 +703,7 @@ async function doLogin() {
   }
 
   currentEmp = data;
+  sessionStorage.setItem('yahma_emp', JSON.stringify(data));
   showPortal();
   // Show basic salary immediately
   const salEl = document.getElementById('stat-salary');
@@ -768,6 +787,7 @@ function showPortal() {
 function logoutEmployee() {
   currentEmp = null;
   localStorage.removeItem('yahma_portal_tab');
+  sessionStorage.removeItem('yahma_emp');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('portal-screen').style.display = 'none';
   document.getElementById('emp-id-input').value = '';
