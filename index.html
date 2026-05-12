@@ -634,7 +634,7 @@ let currentEmp = null;
 const now = new Date();
 
 // HELPERS
-const fmt = n => Math.round(n||0).toLocaleString('en-US');
+const fmt = n => Math.round(n||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab');
 const fmtDate = d => d ? new Date(d).toLocaleDateString(lang==='en'?'en-US':'ar-SA') : '—';
 function bst(s) {
   const m = {pending:'<span class="badge ba">معلق</span>',approved:'<span class="badge bg">مقبول</span>',rejected:'<span class="badge br">مرفوض</span>',paid:'<span class="badge bg">مدفوع</span>'};
@@ -690,7 +690,7 @@ async function doLogin() {
   const salEl = document.getElementById('stat-salary');
   if(salEl) {
     const sal = data.basic_salary || data.daily_wage || 0;
-    salEl.textContent = sal ? Math.round(sal).toLocaleString('en-US') : '—';
+    salEl.textContent = sal ? Math.round(sal).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab') : '—';
   }
 }
 
@@ -1410,7 +1410,7 @@ async function loadEmpNotifications() {
     if(p.status==='paid') notifs.push({ico:'💰',txt:'تم صرف راتبك لشهر '+p.month+'/'+p.year,date:p.updated_at,color:'#F0FDFA',tc:'#0D6E6E'});
   });
   (loans||[]).forEach(l=>{
-    if(l.status==='approved') notifs.push({ico:'✅',txt:'تمت الموافقة على سلفتك بمبلغ '+Math.round(l.amount||0).toLocaleString('en-US')+' ر.س',date:l.updated_at,color:'#DCFCE7',tc:'#166534'});
+    if(l.status==='approved') notifs.push({ico:'✅',txt:'تمت الموافقة على سلفتك بمبلغ '+Math.round(l.amount||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab')+' ر.س',date:l.updated_at,color:'#DCFCE7',tc:'#166534'});
     else if(l.status==='rejected') notifs.push({ico:'❌',txt:'تم رفض طلب سلفتك',date:l.updated_at,color:'#FEE2E2',tc:'#991B1B'});
   });
   notifs.sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -1443,7 +1443,7 @@ async function loadEmpHistory() {
   if(loans?.length){
     html+='<div style="font-size:13px;font-weight:700;color:#0D6E6E;margin:16px 0 6px;">💵 طلبات السلفة</div>';
     html+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="background:#F8FAFC;"><th style="padding:8px;text-align:right;">المبلغ</th><th style="padding:8px;text-align:right;">السبب</th><th style="padding:8px;text-align:right;">الحالة</th></tr>';
-    html+=loans.map(l=>`<tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:8px;">${Math.round(l.amount||0).toLocaleString('en-US')} ر.س</td><td style="padding:8px;">${l.reason||'—'}</td><td style="padding:8px;"><span style="padding:2px 8px;border-radius:10px;background:${sc[l.status]||'#F1F5F9'};font-size:11px;">${st[l.status]||l.status}</span></td></tr>`).join('');
+    html+=loans.map(l=>`<tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:8px;">${Math.round(l.amount||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab')} ر.س</td><td style="padding:8px;">${l.reason||'—'}</td><td style="padding:8px;"><span style="padding:2px 8px;border-radius:10px;background:${sc[l.status]||'#F1F5F9'};font-size:11px;">${st[l.status]||l.status}</span></td></tr>`).join('');
     html+='</table>';
   }
   if(!html) html='<div style="text-align:center;padding:30px;color:#94A3B8;">📋 لا توجد طلبات سابقة</div>';
