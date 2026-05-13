@@ -216,6 +216,14 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
         <div style="font-size:12px;color:#64748B;margin-top:4px;" id="set-pass-name"></div>
       </div>
       <div class="fg">
+        <label>البريد الإلكتروني * <span style="font-size:11px;color:#64748B;">(لاستقبال الإشعارات)</span></label>
+        <input type="email" id="new-email-input" placeholder="example@gmail.com">
+      </div>
+      <div class="fg">
+        <label>رقم الجوال *</label>
+        <input type="tel" id="new-phone-input" placeholder="05xxxxxxxx">
+      </div>
+      <div class="fg">
         <label id="l-newpass-lbl">كلمة المرور الجديدة *</label>
         <input type="password" id="new-pass-input" placeholder="6 أحرف على الأقل">
       </div>
@@ -225,6 +233,29 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
       </div>
       <button class="login-btn" onclick="setPassword()" id="l-setpass-btn">حفظ وادخل</button>
       <div class="login-err" id="setpass-err"></div>
+    </div>
+
+    <!-- STEP 4: OTP VERIFICATION -->
+    <div id="step4" style="display:none;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:36px;">📧</div>
+        <div style="font-size:14px;font-weight:600;color:#0D6E6E;margin-top:8px;">تحقق من بريدك الإلكتروني</div>
+        <div style="font-size:12px;color:#64748B;margin-top:4px;" id="otp-email-hint"></div>
+      </div>
+      <div class="fg">
+        <label>كود التحقق *</label>
+        <input id="otp-input" placeholder="أدخل الكود المكون من 6 أرقام" maxlength="6" 
+          style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:700;"
+          onkeydown="if(event.key==='Enter')verifyOTP()">
+      </div>
+      <button class="login-btn" onclick="verifyOTP()" id="l-otp-btn">تحقق</button>
+      <div class="login-err" id="otp-err"></div>
+      <div style="text-align:center;margin-top:10px;">
+        <button onclick="resendOTP()" style="background:none;border:none;color:#0D9488;cursor:pointer;font-size:12px;">إعادة إرسال الكود</button>
+      </div>
+      <div style="text-align:center;margin-top:6px;">
+        <button onclick="backToLogin()" style="background:none;border:none;color:#64748B;cursor:pointer;font-size:12px;">← رجوع</button>
+      </div>
     </div>
 
     <!-- STEP 3: FORGOT PASSWORD -->
@@ -716,19 +747,24 @@ async function doLogin() {
 async function setPassword() {
   const newPass = document.getElementById('new-pass-input').value;
   const confirmPass = document.getElementById('confirm-pass-input').value;
+  const email = document.getElementById('new-email-input')?.value?.trim() || '';
+  const phone = document.getElementById('new-phone-input')?.value?.trim() || '';
   const err = document.getElementById('setpass-err');
   err.textContent = '';
 
+  if(!email || !email.includes('@')) { err.textContent = lang==='ar'?'أدخل بريد إلكتروني صحيح':'Enter a valid email'; return; }
+  if(!phone || phone.length < 9) { err.textContent = lang==='ar'?'أدخل رقم جوال صحيح':'Enter a valid phone number'; return; }
   if(!newPass || newPass.length < 6) { err.textContent = lang==='ar'?'كلمة المرور يجب أن تكون 6 أحرف على الأقل':'Password must be at least 6 characters'; return; }
   if(newPass !== confirmPass) { err.textContent = lang==='ar'?'كلمة المرور غير متطابقة':'Passwords do not match'; return; }
 
   const {error} = await sb.from('employees')
-    .update({portal_password: newPass, password_set: true})
+    .update({portal_password: newPass, password_set: true, email, phone})
     .eq('id', tempEmp.id);
 
   if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error, try again'; return; }
 
-  currentEmp = {...tempEmp, portal_password: newPass, password_set: true};
+  currentEmp = {...tempEmp, portal_password: newPass, password_set: true, email, phone};
+  sessionStorage.setItem('yahma_emp', JSON.stringify(currentEmp));
   showPortal();
 }
 
@@ -741,6 +777,7 @@ function backToLogin() {
   document.getElementById('step1').style.display = 'block';
   document.getElementById('step2').style.display = 'none';
   document.getElementById('step3').style.display = 'none';
+  document.getElementById('step4').style.display = 'none';
   document.getElementById('forgot-err').textContent = '';
 }
 
@@ -1478,7 +1515,128 @@ async function loadEmpHistory() {
 }
 
 // CHANGE PASSWORD
+
+// ============================================
+// OTP SYSTEM
+// ============================================
+let _otpCode = '';
+let _otpEmail = '';
+let _otpAction = ''; // 'change_password' 
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendOTPEmail(email, name, otp) {
+  try {
+    await fetch('https://zlgvzylgribmavddnzkv.supabase.co/functions/v1/send-email', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer sb_publishable_H2jaVd3tYJnAA1kV3OqOZQ_TauUr8UC'},
+      body: JSON.stringify({
+        type: 'otp',
+        to: email,
+        name: name,
+        otp_code: otp
+      })
+    });
+  } catch(e) { console.log('OTP email error:', e); }
+}
+
+async function requestOTPForPasswordChange() {
+  const email = currentEmp.email || '';
+  if(!email) {
+    alert(lang==='ar'?'لا يوجد إيميل مسجل. أضف إيميلك أولاً من صفحة المعلومات الشخصية':'No email registered. Please add your email first.');
+    return false;
+  }
+  _otpCode = generateOTP();
+  _otpEmail = email;
+  _otpAction = 'change_password';
+  await sendOTPEmail(email, currentEmp.name, _otpCode);
+  return true;
+}
+
+async function verifyOTP() {
+  const input = document.getElementById('otp-input').value.trim();
+  const err = document.getElementById('otp-err');
+  err.textContent = '';
+  
+  if(input !== _otpCode) {
+    err.textContent = lang==='ar'?'الكود غير صحيح، حاول مرة أخرى':'Incorrect code, try again';
+    return;
+  }
+  
+  if(_otpAction === 'change_password') {
+    // OTP verified - proceed with password change
+    document.getElementById('step4').style.display = 'none';
+    document.getElementById('portal-screen').style.display = 'block';
+    await doActualPasswordChange();
+  }
+  _otpCode = '';
+}
+
+async function resendOTP() {
+  if(!_otpEmail) return;
+  _otpCode = generateOTP();
+  await sendOTPEmail(_otpEmail, currentEmp.name, _otpCode);
+  const err = document.getElementById('otp-err');
+  err.style.color = '#16A34A';
+  err.textContent = lang==='ar'?'تم إرسال كود جديد':'New code sent';
+  setTimeout(()=>{ err.textContent=''; err.style.color='#DC2626'; }, 3000);
+}
+
+let _pendingNewPassword = '';
+
 async function changePassword() {
+  const oldP=document.getElementById('pass-old').value.trim();
+  const newP=document.getElementById('pass-new').value.trim();
+  const conf=document.getElementById('pass-confirm').value.trim();
+  const err=document.getElementById('pass-err');
+  err.textContent='';
+  if(!oldP||!newP||!conf){err.textContent=lang==='ar'?'يرجى ملء جميع الحقول':'Please fill all required fields';return;}
+  if(newP.length<8){err.textContent=lang==='ar'?'كلمة المرور يجب أن تكون 8 أحرف على الأقل':'Password must be at least 8 characters';return;}
+  if(newP!==conf){err.textContent=lang==='ar'?'كلمة المرور الجديدة غير متطابقة':'New passwords do not match';return;}
+  const {data:emp}=await sb.from('employees').select('portal_password').eq('id',currentEmp.id).single();
+  if(!emp||emp.portal_password!==oldP){err.textContent=lang==='ar'?'كلمة المرور الحالية غير صحيحة':'Current password is incorrect';return;}
+  
+  // Check if employee has email for OTP
+  if(currentEmp.email) {
+    // Save pending password and send OTP
+    _pendingNewPassword = newP;
+    const sent = await requestOTPForPasswordChange();
+    if(sent) {
+      // Show OTP screen
+      document.getElementById('portal-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.querySelectorAll('#login-screen > div > div[id^="step"]').forEach(s=>s.style.display='none');
+      document.getElementById('step4').style.display = 'block';
+      document.getElementById('otp-email-hint').textContent = lang==='ar'?
+        `تم إرسال كود التحقق إلى ${currentEmp.email}`:
+        `Verification code sent to ${currentEmp.email}`;
+    }
+  } else {
+    // No email - change directly
+    await doActualPasswordChange();
+  }
+}
+
+async function doActualPasswordChange() {
+  if(!_pendingNewPassword) return;
+  const {error}=await sb.from('employees').update({portal_password:_pendingNewPassword}).eq('id',currentEmp.id);
+  _pendingNewPassword = '';
+  if(error){
+    alert(lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred');
+    return;
+  }
+  currentEmp.portal_password = _pendingNewPassword;
+  sessionStorage.setItem('yahma_emp', JSON.stringify(currentEmp));
+  // Show success
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('portal-screen').style.display = 'block';
+  const succ = document.getElementById('pass-success');
+  if(succ) { succ.style.display='block'; setTimeout(()=>succ.style.display='none',4000); }
+}
+
+async function _old_changePassword_disabled() {
   const oldP=document.getElementById('pass-old').value.trim();
   const newP=document.getElementById('pass-new').value.trim();
   const conf=document.getElementById('pass-confirm').value.trim();
