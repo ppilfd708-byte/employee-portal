@@ -235,6 +235,26 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
       <div class="login-err" id="setpass-err"></div>
     </div>
 
+    <!-- STEP 5: EMAIL COLLECTION (existing users without email) -->
+    <div id="step5" style="display:none;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:36px;">📧</div>
+        <div style="font-size:14px;font-weight:600;color:#0D6E6E;margin-top:8px;">مرحباً! أضف بياناتك للتواصل</div>
+        <div style="font-size:12px;color:#64748B;margin-top:4px;" id="step5-name"></div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:4px;">لاستقبال إشعارات الإجازات والرواتب</div>
+      </div>
+      <div class="fg">
+        <label>البريد الإلكتروني *</label>
+        <input type="email" id="step5-email" placeholder="example@gmail.com">
+      </div>
+      <div class="fg">
+        <label>رقم الجوال *</label>
+        <input type="tel" id="step5-phone" placeholder="05xxxxxxxx" onkeydown="if(event.key==='Enter')saveContactInfo()">
+      </div>
+      <button class="login-btn" onclick="saveContactInfo()">حفظ والمتابعة</button>
+      <div class="login-err" id="step5-err"></div>
+    </div>
+
     <!-- STEP 4: OTP VERIFICATION -->
     <div id="step4" style="display:none;">
       <div style="text-align:center;margin-bottom:16px;">
@@ -808,6 +828,14 @@ async function resetPassword() {
 }
 
 function showPortal() {
+  // If no email registered, show email collection screen first
+  if(!currentEmp.email) {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.querySelectorAll('#step1,#step2,#step3,#step4').forEach(s=>s.style.display='none');
+    document.getElementById('step5').style.display = 'block';
+    document.getElementById('step5-name').textContent = currentEmp.name;
+    return;
+  }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('portal-screen').style.display = 'block';
   document.getElementById('portal-name').textContent = currentEmp.name;
@@ -1517,6 +1545,32 @@ async function loadEmpHistory() {
 // CHANGE PASSWORD
 
 // ============================================
+// SAVE CONTACT INFO (existing users)
+async function saveContactInfo() {
+  const email = document.getElementById('step5-email').value.trim();
+  const phone = document.getElementById('step5-phone').value.trim();
+  const err = document.getElementById('step5-err');
+  err.textContent = '';
+  
+  if(!email || !email.includes('@')) { err.textContent = lang==='ar'?'أدخل بريد إلكتروني صحيح':'Enter a valid email'; return; }
+  if(!phone || phone.length < 9) { err.textContent = lang==='ar'?'أدخل رقم جوال صحيح':'Enter a valid phone'; return; }
+  
+  const {error} = await sb.from('employees').update({email, phone}).eq('id', currentEmp.id);
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error, try again'; return; }
+  
+  currentEmp.email = email;
+  currentEmp.phone = phone;
+  sessionStorage.setItem('yahma_emp', JSON.stringify(currentEmp));
+  
+  // Now show portal
+  document.getElementById('step5').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('portal-screen').style.display = 'block';
+  document.getElementById('portal-name').textContent = currentEmp.name;
+  document.getElementById('portal-av').textContent = currentEmp.name[0];
+  loadAllData();
+}
+
 // OTP SYSTEM
 // ============================================
 let _otpCode = '';
