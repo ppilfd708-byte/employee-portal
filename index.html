@@ -1555,21 +1555,30 @@ async function saveContactInfo() {
   if(!email || !email.includes('@')) { err.textContent = lang==='ar'?'أدخل بريد إلكتروني صحيح':'Enter a valid email'; return; }
   if(!phone || phone.length < 9) { err.textContent = lang==='ar'?'أدخل رقم جوال صحيح':'Enter a valid phone'; return; }
   
-  const {error} = await sb.from('employees').update({email, phone}).eq('id', currentEmp.id);
-  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error, try again'; return; }
+  // Save pending data and send OTP
+  _pendingContactEmail = email;
+  _pendingContactPhone = phone;
+  _otpCode = generateOTP();
+  _otpEmail = email;
+  _otpAction = 'verify_contact';
   
-  currentEmp.email = email;
-  currentEmp.phone = phone;
-  sessionStorage.setItem('yahma_emp', JSON.stringify(currentEmp));
+  // Send OTP
+  err.textContent = lang==='ar'?'جاري إرسال كود التحقق...':'Sending verification code...';
+  err.style.color = '#0D9488';
+  await sendOTPEmail(email, currentEmp.name, _otpCode);
+  err.textContent = '';
+  err.style.color = '#DC2626';
   
-  // Now show portal
+  // Show OTP screen
   document.getElementById('step5').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('portal-screen').style.display = 'block';
-  document.getElementById('portal-name').textContent = currentEmp.name;
-  document.getElementById('portal-av').textContent = currentEmp.name[0];
-  loadAllData();
+  document.getElementById('step4').style.display = 'block';
+  document.getElementById('otp-email-hint').textContent = lang==='ar'?
+    `تم إرسال كود التحقق إلى ${email}`:
+    `Verification code sent to ${email}`;
 }
+
+let _pendingContactEmail = '';
+let _pendingContactPhone = '';
 
 // OTP SYSTEM
 // ============================================
@@ -1624,6 +1633,29 @@ async function verifyOTP() {
     document.getElementById('step4').style.display = 'none';
     document.getElementById('portal-screen').style.display = 'block';
     await doActualPasswordChange();
+  } else if(_otpAction === 'verify_contact') {
+    // OTP verified - save email and phone then show portal
+    const {error} = await sb.from('employees').update({
+      email: _pendingContactEmail,
+      phone: _pendingContactPhone
+    }).eq('id', currentEmp.id);
+    
+    if(error) {
+      document.getElementById('otp-err').textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error, try again';
+      return;
+    }
+    currentEmp.email = _pendingContactEmail;
+    currentEmp.phone = _pendingContactPhone;
+    _pendingContactEmail = '';
+    _pendingContactPhone = '';
+    sessionStorage.setItem('yahma_emp', JSON.stringify(currentEmp));
+    
+    document.getElementById('step4').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('portal-screen').style.display = 'block';
+    document.getElementById('portal-name').textContent = currentEmp.name;
+    document.getElementById('portal-av').textContent = currentEmp.name[0];
+    loadAllData();
   }
   _otpCode = '';
 }
