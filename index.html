@@ -492,6 +492,14 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
             <button class="submit-btn" style="width:auto;padding:8px 14px;font-size:12px;" onclick="requestUpdate('id_number', 'pf-idnum', 'رقم الهوية/الإقامة')">طلب تعديل</button>
           </div>
         </div>
+        <div class="fr">
+          <label>رقم الآيبان (IBAN)</label>
+          <div style="display:flex;gap:8px;">
+            <input id="pf-iban" type="text" placeholder="SA0000000000000000000000" maxlength="34" style="flex:1;font-family:monospace;letter-spacing:1px;">
+            <button class="submit-btn" style="width:auto;padding:8px 14px;font-size:12px;" onclick="saveIBAN()">حفظ</button>
+          </div>
+          <small style="color:#64748B;font-size:11px;margin-top:4px;display:block;">مثال: SA29 3000 0000 1000 0975 3000</small>
+        </div>
         <div class="err-msg" id="profile-err"></div>
       </div>
 
@@ -894,6 +902,7 @@ function loadEmpInfo() {
     {lbl:isEn?'Join Date':'تاريخ الانضمام', val: fmtDate(e.join_date)},
     {lbl:isEn?'Last Leave':'آخر إجازة', val: fmtDate(e.last_leave_date)},
     {lbl:isEn?'Last Ticket':'آخر تذكرة طيران', val: e.last_ticket_date?(fmtDate(e.last_ticket_date)+(e.last_ticket_destination?' ('+e.last_ticket_destination+')'  :'')):'—'},
+    {lbl:isEn?'IBAN':'رقم الآيبان (IBAN)', val: e.bank_account||'—'},
   ];
   grid.innerHTML = fields.map(f => `<div class="info-item"><div class="info-label">${f.lbl}</div><div class="info-value">${f.val}</div></div>`).join('');
 }
@@ -1222,6 +1231,10 @@ async function loadProfileData() {
   document.getElementById('pf-phone').value = currentEmp.phone || '';
   document.getElementById('pf-email').value = currentEmp.email || '';
   document.getElementById('pf-idnum').value = currentEmp.id_number || '';
+  document.getElementById('pf-iban').value = currentEmp.bank_account || '';
+  // Show IBAN in info tab
+  const ibanEl = document.getElementById('iv-iban');
+  if(ibanEl) ibanEl.textContent = currentEmp.bank_account || '—';
   loadProfileRequests();
 }
 
@@ -1579,6 +1592,35 @@ async function saveContactInfo() {
 
 let _pendingContactEmail = '';
 let _pendingContactPhone = '';
+
+// SAVE IBAN
+async function saveIBAN() {
+  const iban = document.getElementById('pf-iban').value.trim().replace(/\s/g,'').toUpperCase();
+  const err = document.getElementById('profile-err');
+  err.textContent = '';
+  
+  if(!iban) { err.textContent = lang==='ar'?'أدخل رقم الآيبان':'Enter IBAN'; return; }
+  if(!iban.startsWith('SA') || iban.length !== 24) {
+    err.textContent = lang==='ar'?'رقم الآيبان يجب أن يبدأ بـ SA ويتكون من 24 رقم':'IBAN must start with SA and be 24 characters';
+    return;
+  }
+  
+  // Send as update request (needs manager approval)
+  const {error} = await sb.from('profile_update_requests').insert({
+    employee_id: currentEmp.id,
+    field_name: 'bank_account',
+    field_label: 'رقم الآيبان (IBAN)',
+    old_value: currentEmp.bank_account || '—',
+    new_value: iban,
+    status: 'pending'
+  });
+  
+  if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'Error, try again'; return; }
+  
+  err.style.color = '#16A34A';
+  err.textContent = lang==='ar'?'✅ تم إرسال طلب التعديل بنجاح، في انتظار موافقة الإدارة':'✅ Update request submitted, awaiting manager approval';
+  setTimeout(()=>{ err.textContent=''; err.style.color='#DC2626'; }, 4000);
+}
 
 // OTP SYSTEM
 // ============================================
