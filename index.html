@@ -312,7 +312,11 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
         <span id="portal-company" style="font-size:11px;opacity:0.8;">شركة يهماء لتأجير السيارات</span>
       </div>
     </div>
-    <div class="portal-user">
+    <div class="portal-user" style="display:flex;align-items:center;gap:10px;">
+      <div style="position:relative;cursor:pointer;" onclick="showTab('notifications',document.getElementById('tab-notifications'))">
+        <span style="font-size:22px;color:white;">🔔</span>
+        <span id="notif-count-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#EF4444;color:white;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;text-align:center;line-height:16px;">0</span>
+      </div>
       <div class="portal-av" id="portal-av">م</div>
       <div class="portal-name" id="portal-name">—</div>
       <button class="logout-link" onclick="logoutEmployee()" id="portal-logout">خروج</button>
@@ -912,7 +916,8 @@ async function loadEmpLeaves() {
   const {data} = await sb.from('leaves').select('*').eq('employee_id', currentEmp.id).order('created_at',{ascending:false});
   const tbody = document.getElementById('emp-leaves-table');
   if(!data||!data.length) { tbody.innerHTML=`<tr><td colspan="5" class="empty">${lang==='ar'?'لا توجد إجازات مسجلة':'No leaves recorded'}</td></tr>`; document.getElementById('stat-leaves').textContent='0'; return; }
-  document.getElementById('stat-leaves').textContent = data.length;
+  const approvedDays = data.filter(l=>l.status==='approved').reduce((s,l)=>s+(l.days_count||0),0);
+  document.getElementById('stat-leaves').textContent = approvedDays + ' يوم';
   tbody.innerHTML = data.map(r => `<tr>
     <td>${r.leave_type||'—'}</td>
     <td>${fmtDate(r.start_date)}</td>
@@ -1541,10 +1546,12 @@ async function loadEmpNotifications() {
 async function loadEmpHistory() {
   const el = document.getElementById('emp-history-list');
   if(!el || !currentEmp) return;
-  const [{data:leaves},{data:loans},{data:complaints}] = await Promise.all([
+  el.innerHTML = '<div class="loading">جاري التحميل...</div>';
+  const [{data:leaves},{data:loans},{data:complaints},{data:resignations}] = await Promise.all([
     sb.from('leaves').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}),
     sb.from('loans').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}),
-    sb.from('complaints').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false})
+    sb.from('complaints').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}),
+    sb.from('resignations').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}),
   ]);
   const sc={pending:'#FEF3C7',approved:'#DCFCE7',rejected:'#FEE2E2',paid:'#F0FDFA'};
   const st={pending:'⏳ معلق',approved:'✅ مقبول',rejected:'❌ مرفوض',paid:'💰 مدفوع'};
@@ -1559,6 +1566,20 @@ async function loadEmpHistory() {
     html+='<div style="font-size:13px;font-weight:700;color:#0D6E6E;margin:16px 0 6px;">💵 طلبات السلفة</div>';
     html+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="background:#F8FAFC;"><th style="padding:8px;text-align:right;">المبلغ</th><th style="padding:8px;text-align:right;">السبب</th><th style="padding:8px;text-align:right;">الحالة</th></tr>';
     html+=loans.map(l=>`<tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:8px;">${Math.round(l.amount||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab')} ر.س</td><td style="padding:8px;">${l.reason||'—'}</td><td style="padding:8px;"><span style="padding:2px 8px;border-radius:10px;background:${sc[l.status]||'#F1F5F9'};font-size:11px;">${st[l.status]||l.status}</span></td></tr>`).join('');
+    html+='</table>';
+  }
+  // Add complaints
+  if(complaints?.length){
+    html+=`<div style="font-size:13px;font-weight:700;color:#0D6E6E;margin:12px 0 6px;">📢 الشكاوى والاقتراحات (${complaints.length})</div>`;
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;"><tr style="background:#F8FAFC;"><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">النوع</th><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">الموضوع</th><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">الحالة</th></tr>';
+    html+=complaints.map(c=>`<tr style="border-bottom:0.5px solid #F1F5F9;"><td style="padding:7px 8px;">${c.complaint_type||'—'}</td><td style="padding:7px 8px;">${c.subject||'—'}</td><td style="padding:7px 8px;"><span style="padding:2px 8px;border-radius:10px;background:${sc[c.status]||'#F1F5F9'};font-size:11px;">${st[c.status]||c.status}</span></td></tr>`).join('');
+    html+='</table>';
+  }
+  // Add resignations
+  if(resignations?.length){
+    html+=`<div style="font-size:13px;font-weight:700;color:#0D6E6E;margin:12px 0 6px;">📤 طلبات الاستقالة (${resignations.length})</div>`;
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;"><tr style="background:#F8FAFC;"><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">السبب</th><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">آخر يوم</th><th style="padding:7px 8px;text-align:right;border-bottom:1px solid #E2E8F0;">الحالة</th></tr>';
+    html+=resignations.map(r=>`<tr style="border-bottom:0.5px solid #F1F5F9;"><td style="padding:7px 8px;">${r.reason||'—'}</td><td style="padding:7px 8px;">${fmtDate(r.last_day)||'—'}</td><td style="padding:7px 8px;"><span style="padding:2px 8px;border-radius:10px;background:${sc[r.status]||'#F1F5F9'};font-size:11px;">${st[r.status]||r.status}</span></td></tr>`).join('');
     html+='</table>';
   }
   if(!html) html='<div style="text-align:center;padding:30px;color:#94A3B8;">📋 لا توجد طلبات سابقة</div>';
