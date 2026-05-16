@@ -1053,6 +1053,13 @@ async function submitLeaveRequest() {
   document.getElementById('req-notes').value='';
   if(fileInput) fileInput.value='';
   setTimeout(()=>document.getElementById('req-success').style.display='none',4000);
+  // Send confirmation email
+  sendConfirmationEmail('leave', {
+    'نوع الإجازة': type,
+    'من': start,
+    'إلى': end,
+    'عدد الأيام': days + ' يوم',
+  });
   loadEmpLeaves();
 }
 
@@ -1085,6 +1092,7 @@ async function submitResignation() {
   document.getElementById('resign-success').style.display = 'block';
   document.getElementById('resign-date').value = '';
   document.getElementById('resign-last').value = '';
+  sendConfirmationEmail('resignation', {'تاريخ الاستقالة': document.getElementById('resign-date')?.value||'—'});
   document.getElementById('resign-reason').value = '';
   document.getElementById('resign-notes').value = '';
   setTimeout(() => document.getElementById('resign-success').style.display='none', 5000);
@@ -1130,6 +1138,7 @@ async function submitComplaint() {
 
   if(error) { err.textContent = lang==='ar'?'حدث خطأ، حاول مرة أخرى':'An error occurred, please try again'; return; }
   document.getElementById('complaint-success').style.display = 'block';
+  sendConfirmationEmail('complaint', {'الموضوع': document.getElementById('comp-subject')?.value||'—'});
   document.getElementById('complaint-type').value = '';
   document.getElementById('complaint-subject').value = '';
   document.getElementById('complaint-details').value = '';
@@ -1203,6 +1212,7 @@ async function submitLoan() {
   document.getElementById('loan-notes').value = '';
   document.getElementById('loan-calc').style.display = 'none';
   setTimeout(() => document.getElementById('loan-success').style.display='none', 4000);
+  sendConfirmationEmail('loan', {'المبلغ المطلوب': document.getElementById('loan-amount')?.value+' ر.س'||'—', 'الملاحظات': notes||'—'});
   loadLoansHistory();
 }
 
@@ -1620,6 +1630,39 @@ async function saveIBAN() {
   err.style.color = '#16A34A';
   err.textContent = lang==='ar'?'✅ تم إرسال طلب التعديل بنجاح، في انتظار موافقة الإدارة':'✅ Update request submitted, awaiting manager approval';
   setTimeout(()=>{ err.textContent=''; err.style.color='#DC2626'; }, 4000);
+}
+
+
+// CONFIRMATION EMAILS
+async function sendConfirmationEmail(type, details) {
+  const emp = currentEmp;
+  if(!emp || !emp.email) return; // No email registered
+  
+  const typeLabels = {
+    leave: 'إجازة',
+    loan: 'سلفة',
+    resignation: 'استقالة',
+    complaint: 'شكوى / اقتراح',
+    profile_update: 'تعديل بيانات',
+  };
+
+  const detailsHtml = Object.entries(details).map(([k,v]) => 
+    `<p style="margin:6px 0;"><strong>${k}:</strong> ${v}</p>`
+  ).join('');
+
+  try {
+    await fetch('https://zlgvzylgribmavddnzkv.supabase.co/functions/v1/send-email', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer sb_publishable_H2jaVd3tYJnAA1kV3OqOZQ_TauUr8UC'},
+      body: JSON.stringify({
+        type: 'confirmation',
+        to: emp.email,
+        name: emp.name,
+        request_type: typeLabels[type] || type,
+        details_html: detailsHtml,
+      })
+    });
+  } catch(e) { console.log('Confirmation email error:', e); }
 }
 
 // OTP SYSTEM
