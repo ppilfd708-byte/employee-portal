@@ -1875,10 +1875,13 @@ async function loadEmpWarnings() {
   const el = document.getElementById('emp-warnings-list');
   if(!el || !currentEmp) return;
   
-  const {data} = await sb.from('warnings')
+  console.log('loadEmpWarnings - empId:', currentEmp.id);
+  const {data, error} = await sb.from('warnings')
     .select('*')
     .eq('employee_id', currentEmp.id)
     .order('created_at', {ascending: false});
+  
+  console.log('warnings data:', data, 'error:', error);
   
   if(!data || !data.length) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:#94A3B8;">✅ لا توجد إنذارات</div>';
