@@ -897,6 +897,11 @@ function showTab(id, el) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+id+'-content').classList.add('active');
+  localStorage.setItem('yahma_portal_tab', id);
+  // Load data for tab
+  if(id==='warnings') loadEmpWarnings();
+  if(id==='history') loadEmpHistory();
+  if(id==='notifications') loadNotifDropdown();
 }
 
 // LOAD ALL DATA
@@ -908,6 +913,8 @@ async function loadAllData() {
   loadComplaints();
   loadLoansHistory();
   loadProfileData();
+  loadEmpWarnings();
+  loadEmpHistory();
 }
 
 // INFO
