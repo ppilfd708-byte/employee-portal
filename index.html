@@ -1085,8 +1085,8 @@ async function submitResignation() {
   const {error} = await sb.from('resignations').insert({
     employee_id: currentEmp.id,
     employee_name: currentEmp.name,
-    resignation_date: date,
-    last_working_day: last,
+    resign_date: date,
+    last_day: last,
     reason: reason || 'لم يحدد',
     notes: notes,
     status: 'pending'
@@ -1136,7 +1136,7 @@ async function submitComplaint() {
   const {error} = await sb.from('complaints').insert({
     employee_id: anonymous ? null : currentEmp.id,
     employee_name: anonymous ? 'مجهول' : currentEmp.name,
-    type: type, subject: subject, details: details,
+    complaint_type: type, subject: subject, description: details,
     anonymous: anonymous, status: 'pending',
     attachment_url: compUrl
   });
