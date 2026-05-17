@@ -1677,7 +1677,7 @@ async function sendConfirmationEmail(type, details) {
   try {
     await fetch('https://zlgvzylgribmavddnzkv.supabase.co/functions/v1/send-email', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer sb_publishable_H2jaVd3tYJnAA1kV3OqOZQ_TauUr8UC'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZ3Z6eWxncmltYXZkZG56a3YiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzU0MjA1NywiZXhwIjoyMDkzMTE4MDU3fQ.cFwN_97FumQ8-zA7n38DKpBHlqlknmg4udG6JXVzF3s'},
       body: JSON.stringify({
         type: 'confirmation',
         to: emp.email,
@@ -1703,7 +1703,7 @@ async function sendOTPEmail(email, name, otp) {
   try {
     await fetch('https://zlgvzylgribmavddnzkv.supabase.co/functions/v1/send-email', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer sb_publishable_H2jaVd3tYJnAA1kV3OqOZQ_TauUr8UC'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZ3Z6eWxncmltYXZkZG56a3YiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzU0MjA1NywiZXhwIjoyMDkzMTE4MDU3fQ.cFwN_97FumQ8-zA7n38DKpBHlqlknmg4udG6JXVzF3s'},
       body: JSON.stringify({
         type: 'otp',
         to: email,
