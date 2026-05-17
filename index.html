@@ -353,6 +353,7 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
       <div class="tab" onclick="showTab('loan',this)" id="tab-loan">💵 طلب سلفة</div>
       <div class="tab" onclick="showTab('profile',this)" id="tab-profile">✏️ تعديل بياناتي</div>
 
+      <div class="tab" onclick="showTab('warnings',this)" id="tab-warnings">⚠️ إنذاراتي</div>
       <div class="tab" onclick="showTab('history',this)" id="tab-history">📋 سجل طلباتي</div>
       <div class="tab" onclick="showTab('password',this)" id="tab-password">🔑 كلمة المرور</div>
     </div>
@@ -664,6 +665,14 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
     </div>
 
     <!-- HISTORY TAB -->
+    <!-- WARNINGS TAB -->
+    <div class="tab-content" id="tab-warnings-content">
+      <div class="info-card">
+        <div class="card-title">⚠️ <span id="warnings-emp-title">إنذاراتي</span></div>
+        <div id="emp-warnings-list"><div class="loading">جاري التحميل...</div></div>
+      </div>
+    </div>
+
     <div class="tab-content" id="tab-history-content">
       <div class="info-card">
         <div class="card-title">📋 <span id="history-title">سجل جميع طلباتي</span></div>
@@ -1486,7 +1495,7 @@ function toggleLang() {
   if(activeTab && currentEmp) {
     const tabId = activeTab.id ? activeTab.id.replace('tab-','') : '';
     const loaders = {
-      info:loadEmpInfo, leaves:loadEmpLeaves, payroll:loadEmpPayroll,
+      info:loadEmpInfo, leaves:loadEmpLeaves, payroll:loadEmpPayroll, warnings:loadEmpWarnings,
       tickets:loadEmpTickets, notifications:loadEmpNotifications, history:loadEmpHistory
     };
     if(loaders[tabId]) loaders[tabId]();
@@ -1860,6 +1869,34 @@ async function _old_changePassword_disabled() {
   setTimeout(()=>document.getElementById('pass-success').style.display='none',4000);
 }
 
+
+// EMPLOYEE WARNINGS
+async function loadEmpWarnings() {
+  const el = document.getElementById('emp-warnings-list');
+  if(!el || !currentEmp) return;
+  
+  const {data} = await sb.from('warnings')
+    .select('*')
+    .eq('employee_id', currentEmp.id)
+    .order('created_at', {ascending: false});
+  
+  if(!data || !data.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#94A3B8;">✅ لا توجد إنذارات</div>';
+    return;
+  }
+  
+  el.innerHTML = data.map(w => `
+    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-weight:500;color:#DC2626;">⚠️ ${w.warning_type||'إنذار'}</div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;">${w.description||'—'}</div>
+          <div style="font-size:11px;color:#94A3B8;margin-top:4px;">صادر من: ${w.issued_by||'الإدارة'} · ${fmtDate(w.created_at)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
 // NOTIFICATION DROPDOWN
 function toggleNotifDropdown() {
