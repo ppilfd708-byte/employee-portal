@@ -343,7 +343,7 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
       <div class="tab" onclick="showTab('complaint',this)" id="tab-complaint">📢 شكوى / اقتراح</div>
       <div class="tab" onclick="showTab('loan',this)" id="tab-loan">💵 طلب سلفة</div>
       <div class="tab" onclick="showTab('profile',this)" id="tab-profile">✏️ تعديل بياناتي</div>
-      <div class="tab" onclick="showTab('notifications',this)" id="tab-notifications">🔔 إشعاراتي</div>
+
       <div class="tab" onclick="showTab('history',this)" id="tab-history">📋 سجل طلباتي</div>
       <div class="tab" onclick="showTab('password',this)" id="tab-password">🔑 كلمة المرور</div>
     </div>
@@ -867,8 +867,10 @@ function logoutEmployee() {
   sessionStorage.removeItem('yahma_emp');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('portal-screen').style.display = 'none';
-  document.getElementById('emp-id-input').value = '';
-  document.getElementById('emp-name-input').value = '';
+  const idInp = document.getElementById('emp-id-input');
+  const nameInp = document.getElementById('emp-name-input');
+  if(idInp) idInp.value = '';
+  if(nameInp) nameInp.value = '';
 }
 
 // TABS
@@ -1545,6 +1547,7 @@ async function loadEmpNotifications() {
 // HISTORY
 async function loadEmpHistory() {
   const el = document.getElementById('emp-history-list');
+  console.log('loadEmpHistory called, el:', !!el, 'currentEmp:', !!currentEmp);
   if(!el || !currentEmp) return;
   el.innerHTML = '<div class="loading">جاري التحميل...</div>';
   const [{data:leaves},{data:loans},{data:complaints},{data:resignations}] = await Promise.all([
