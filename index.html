@@ -27,6 +27,10 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
 /* PORTAL */
 .portal{display:none;min-height:100vh;}
 .portal-header{background:linear-gradient(135deg,#0D6E6E,#0D9488);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+@media(max-width:768px){
+  .portal-header{flex-direction:row-reverse;}
+  .portal-user{flex-direction:row-reverse;}
+}
 .portal-logo{color:#fff;font-size:18px;font-weight:700;}
 .portal-logo span{font-size:12px;opacity:0.8;display:block;}
 .portal-user{display:flex;align-items:center;gap:10px;}
@@ -47,11 +51,13 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
 /* Mobile: hide sidebar */
 @media(max-width:768px){
   #portal-sidebar{display:none;position:fixed;top:0;right:0;height:100vh;z-index:999;box-shadow:-4px 0 20px rgba(0,0,0,0.15);}
-  #portal-sidebar.open{display:block;}
+  #portal-sidebar.open{display:block !important;}
   #portal-hamburger{display:block !important;}
   .portal-content{flex-direction:column;}
   .portal-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:998;}
   .portal-sidebar-overlay.open{display:block;}
+  .portal-page.active{display:block !important;}
+  #page-home .stat-grid{grid-template-columns:1fr 1fr !important;}
 }
 /* CARDS */
 .info-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:14px;}
@@ -347,8 +353,13 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
           </div>
         </div>
       </div>
-      <div class="portal-av" id="portal-av">م</div>
-      <div class="portal-name" id="portal-name">—</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div id="portal-av-wrap" style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <img id="portal-av-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
+          <span id="portal-av" style="font-size:14px;color:white;font-weight:600;">م</span>
+        </div>
+        <div class="portal-name" id="portal-name" style="color:white;font-size:13px;font-weight:500;">—</div>
+      </div>
 
     </div>
   </div>
@@ -973,6 +984,13 @@ function showPortal() {
   document.getElementById('portal-screen').style.display = 'block';
   document.getElementById('portal-name').textContent = currentEmp.name;
   document.getElementById('portal-av').textContent = currentEmp.name[0];
+  // Load employee photo if exists
+  if(currentEmp.photo_url) {
+    const img = document.getElementById('portal-av-img');
+    const av = document.getElementById('portal-av');
+    if(img) { img.src = currentEmp.photo_url; img.style.display='block'; }
+    if(av) av.style.display = 'none';
+  }
   loadAllData();
   // Load home page data
   setTimeout(() => {
