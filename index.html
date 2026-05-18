@@ -333,11 +333,39 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
   </div>
 
   <div class="portal-content">
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="stat-leaves">—</div><div class="stat-lbl" id="stat-leaves-lbl">إجازاتي</div></div>
-      <div class="stat"><div class="stat-num" id="stat-salary">—</div><div class="stat-lbl" id="stat-salary-lbl">الراتب الأساسي</div></div>
-      <div class="stat"><div class="stat-num" id="stat-eosb">—</div><div class="stat-lbl" id="stat-eosb-lbl">مخصص نهاية الخدمة</div></div>
+    <!-- DASHBOARD CARDS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:10px;color:#0F766E;margin-bottom:4px;">💵 الراتب الأساسي</div>
+        <div style="font-size:20px;font-weight:500;color:#0D9488;" id="stat-salary">—</div>
+        <div style="font-size:9px;color:#0F766E;">ر.س</div>
+      </div>
+      <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:10px;color:#1E40AF;margin-bottom:4px;">📊 مخصص نهاية الخدمة</div>
+        <div style="font-size:18px;font-weight:500;color:#1D4ED8;" id="stat-eosb">—</div>
+        <div style="font-size:9px;color:#1E40AF;">ر.س</div>
+      </div>
+    </div>
+
+    <!-- QUICK REQUESTS -->
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary,#64748B);margin-bottom:8px;" id="req-menu-title">طلب سريع</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div onclick="showTab('requests-menu',document.getElementById('tab-requests-menu'));showRequestForm('request')" style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:22px;">🏖️</div>
+        <div style="font-size:10px;color:#0F766E;margin-top:4px;" id="rm-leave">إجازة</div>
+      </div>
+      <div onclick="showTab('requests-menu',document.getElementById('tab-requests-menu'));showRequestForm('loan')" style="background:#FEF9C3;border:1px solid #FCD34D;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:22px;">💵</div>
+        <div style="font-size:10px;color:#92400E;margin-top:4px;" id="rm-loan">سلفة</div>
+      </div>
+      <div onclick="showTab('requests-menu',document.getElementById('tab-requests-menu'));showRequestForm('resignation')" style="background:#FDF4FF;border:1px solid #E9D5FF;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:22px;">📤</div>
+        <div style="font-size:10px;color:#7E22CE;margin-top:4px;" id="rm-resign">استقالة</div>
+      </div>
+      <div onclick="showTab('requests-menu',document.getElementById('tab-requests-menu'));showRequestForm('complaint')" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+        <div style="font-size:22px;">📢</div>
+        <div style="font-size:10px;color:#C2410C;margin-top:4px;" id="rm-complaint">شكوى</div>
+      </div>
     </div>
 
     <!-- TABS -->
