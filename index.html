@@ -338,7 +338,11 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
       <button id="portal-hamburger" onclick="togglePortalSidebar()" 
         style="display:none;background:rgba(255,255,255,0.15);border:none;color:white;font-size:18px;cursor:pointer;padding:4px 10px;border-radius:6px;align-self:flex-start;">☰</button>
     </div>
-    <div class="portal-user" style="display:flex;align-items:center;gap:10px;">
+    <div class="portal-user" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="portal-av" id="portal-av">م</div>
+        <div class="portal-name" id="portal-name">—</div>
+      </div>
       <div style="position:relative;" id="bell-wrapper">
         <div onclick="toggleNotifDropdown()" style="cursor:pointer;position:relative;">
           <span style="font-size:22px;color:white;">🔔</span>
@@ -352,8 +356,7 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
           </div>
         </div>
       </div>
-      <div class="portal-av" id="portal-av">م</div>
-      <div class="portal-name" id="portal-name">—</div>
+
 
 
     </div>
@@ -981,13 +984,17 @@ function showPortal() {
     loadHomeRecent();
     loadStatYears();
     // Move tab content to portal pages
-    ['info','leaves','payroll','tickets','request','loan','complaint','resignation','profile','warnings','history','password'].forEach(id => {
+    ['leaves','payroll','tickets','request','loan','complaint','resignation','profile','warnings','history','password'].forEach(id => {
       const tabContent = document.getElementById('tab-' + id + '-content');
       const portalPage = document.getElementById('page-' + id);
       if(tabContent && portalPage && !portalPage.hasChildNodes()) {
         portalPage.innerHTML = tabContent.innerHTML;
       }
     });
+    // Load info separately 
+    const infoContent = document.getElementById('tab-info-content');
+    const infoPage = document.getElementById('page-info');
+    if(infoContent && infoPage) infoPage.innerHTML = infoContent.innerHTML;
   }, 300);
   // Restore last visited tab
   const lastTab = localStorage.getItem('yahma_portal_tab');
@@ -1072,6 +1079,7 @@ function showPortalPage(id, el) {
   if(id==='payroll') loadEmpPayroll();
   if(id==='tickets') loadEmpTickets();
   if(id==='home') loadHomeRecent();
+  if(id==='info') loadEmpInfo();
   
   localStorage.setItem('yahma_portal_page', id);
 }
