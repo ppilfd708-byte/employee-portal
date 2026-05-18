@@ -33,7 +33,22 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
 .portal-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:600;}
 .portal-name{color:#fff;font-size:13px;font-weight:500;}
 .logout-link{color:rgba(255,255,255,0.7);font-size:12px;cursor:pointer;border:none;background:none;}
-.portal-content{padding:16px;max-width:900px;margin:0 auto;}
+.portal-content{display:flex;gap:0;padding:0;max-width:100%;}
+
+/* SIDEBAR NAV */
+.p-nav-item{padding:9px 14px;display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;color:#475569;transition:all 0.15s;border-right:3px solid transparent;}
+.p-nav-item:hover{background:#F8FAFC;color:#0D9488;}
+.p-nav-item.active{background:#F0FDFA;color:#0D9488;font-weight:500;border-right-color:#0D9488;}
+
+/* PORTAL PAGES */
+.portal-page{display:none;}
+.portal-page.active{display:block;}
+
+/* Mobile: hide sidebar */
+@media(max-width:768px){
+  #portal-sidebar{display:none;}
+  .portal-content{flex-direction:column;}
+}
 /* CARDS */
 .info-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:14px;}
 .card-title{font-size:14px;font-weight:600;color:#0D6E6E;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
@@ -332,28 +347,109 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F8FAFC;color:#0F
     </div>
   </div>
 
-  <div class="portal-content">
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="stat-leaves">—</div><div class="stat-lbl" id="stat-leaves-lbl">إجازاتي</div></div>
-      <div class="stat"><div class="stat-num" id="stat-salary">—</div><div class="stat-lbl" id="stat-salary-lbl">الراتب الأساسي</div></div>
-      <div class="stat"><div class="stat-num" id="stat-eosb">—</div><div class="stat-lbl" id="stat-eosb-lbl">مخصص نهاية الخدمة</div></div>
+  <div class="portal-content" style="display:flex;gap:0;padding:0;">
+    
+    <!-- SIDEBAR -->
+    <div id="portal-sidebar" style="width:200px;min-width:200px;background:white;border-left:1px solid #E2E8F0;padding:12px 0;height:calc(100vh - 60px);overflow-y:auto;position:sticky;top:0;flex-shrink:0;">
+      
+      <div style="padding:4px 14px;font-size:10px;color:#94A3B8;font-weight:500;margin-bottom:2px;">الرئيسية</div>
+      <div class="p-nav-item active" onclick="showPortalPage('home',this)" id="pnav-home">🏠 <span>الرئيسية</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('info',this)" id="pnav-info">👤 <span id="tab-info">بياناتي</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('leaves',this)" id="pnav-leaves">📅 <span id="tab-leaves">إجازاتي</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('payroll',this)" id="pnav-payroll">💰 <span id="tab-payroll">رواتبي</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('tickets',this)" id="pnav-tickets">✈️ <span id="tab-tickets">تذاكري</span></div>
+
+      <div style="padding:4px 14px;font-size:10px;color:#94A3B8;font-weight:500;margin:8px 0 2px;">الطلبات</div>
+      <div class="p-nav-item" onclick="showPortalPage('request',this)" id="pnav-request">🏖️ <span>طلب إجازة</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('loan',this)" id="pnav-loan">💵 <span id="tab-loan">طلب سلفة</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('complaint',this)" id="pnav-complaint">📢 <span id="tab-complaint">شكوى</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('resignation',this)" id="pnav-resignation">📤 <span id="tab-resignation">استقالة</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('profile',this)" id="pnav-profile">✏️ <span id="tab-profile">تعديل بياناتي</span></div>
+
+      <div style="padding:4px 14px;font-size:10px;color:#94A3B8;font-weight:500;margin:8px 0 2px;">أخرى</div>
+      <div class="p-nav-item" onclick="showPortalPage('warnings',this)" id="pnav-warnings">⚠️ <span id="tab-warnings">إنذاراتي</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('history',this)" id="pnav-history">📋 <span id="tab-history">سجل طلباتي</span></div>
+      <div class="p-nav-item" onclick="showPortalPage('password',this)" id="pnav-password">🔑 <span id="tab-password">كلمة المرور</span></div>
+      <div class="p-nav-item" onclick="logoutEmployee()" style="color:#DC2626;">🚪 <span id="portal-logout">خروج</span></div>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('info',this)" id="tab-info">👤 بياناتي</div>
-      <div class="tab" onclick="showTab('leaves',this)" id="tab-leaves">📅 إجازاتي</div>
-      <div class="tab" onclick="showTab('payroll',this)" id="tab-payroll">💰 رواتبي</div>
-      <div class="tab" onclick="showTab('tickets',this)" id="tab-tickets">✈️ تذاكري</div>
+    <!-- MAIN CONTENT -->
+    <div style="flex:1;padding:16px;overflow-y:auto;min-width:0;">
 
-      <div class="tab" onclick="showTab('requests-menu',this)" id="tab-requests-menu">➕ طلب جديد</div>
-      <div class="tab" onclick="showTab('profile',this)" id="tab-profile">✏️ تعديل بياناتي</div>
+      <!-- HOME DASHBOARD -->
+      <div class="portal-page active" id="page-home">
+        <!-- KPI Cards -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:10px;color:#64748B;margin-bottom:6px;">💵 الراتب الأساسي</div>
+            <div style="font-size:22px;font-weight:500;color:#0D9488;" id="stat-salary">—</div>
+            <div style="font-size:9px;color:#64748B;">ر.س</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:10px;color:#64748B;margin-bottom:6px;">📊 مخصص نهاية الخدمة</div>
+            <div style="font-size:20px;font-weight:500;color:#1D4ED8;" id="stat-eosb">—</div>
+            <div style="font-size:9px;color:#64748B;">ر.س</div>
+          </div>
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:10px;color:#64748B;margin-bottom:6px;">⏱️ سنوات الخدمة</div>
+            <div style="font-size:22px;font-weight:500;color:#7C3AED;" id="stat-years">—</div>
+            <div style="font-size:9px;color:#64748B;">سنة</div>
+          </div>
+        </div>
 
-      <div class="tab" onclick="showTab('warnings',this)" id="tab-warnings">⚠️ إنذاراتي</div>
-      <div class="tab" onclick="showTab('history',this)" id="tab-history">📋 سجل طلباتي</div>
-      <div class="tab" onclick="showTab('password',this)" id="tab-password">🔑 كلمة المرور</div>
+        <!-- Quick Requests -->
+        <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:500;color:#0D9488;margin-bottom:12px;" id="req-menu-title">⚡ طلب سريع</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div onclick="showPortalPage('request',document.getElementById('pnav-request'))" style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <div style="font-size:24px;">🏖️</div>
+              <div style="font-size:11px;color:#0F766E;margin-top:4px;font-weight:500;" id="rm-leave">إجازة</div>
+            </div>
+            <div onclick="showPortalPage('loan',document.getElementById('pnav-loan'))" style="background:#FEF9C3;border:1px solid #FCD34D;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <div style="font-size:24px;">💵</div>
+              <div style="font-size:11px;color:#92400E;margin-top:4px;font-weight:500;" id="rm-loan">سلفة</div>
+            </div>
+            <div onclick="showPortalPage('resignation',document.getElementById('pnav-resignation'))" style="background:#FDF4FF;border:1px solid #E9D5FF;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <div style="font-size:24px;">📤</div>
+              <div style="font-size:11px;color:#7E22CE;margin-top:4px;font-weight:500;" id="rm-resign">استقالة</div>
+            </div>
+            <div onclick="showPortalPage('complaint',document.getElementById('pnav-complaint'))" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <div style="font-size:24px;">📢</div>
+              <div style="font-size:11px;color:#C2410C;margin-top:4px;font-weight:500;" id="rm-complaint">شكوى</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Requests -->
+        <div style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:16px;">
+          <div style="font-size:12px;font-weight:500;color:#0D9488;margin-bottom:12px;">📋 آخر طلباتي</div>
+          <div id="home-recent-requests"><div class="loading">جاري التحميل...</div></div>
+        </div>
+      </div>
+
+      <!-- ALL OTHER PAGES AS portal-page divs -->
+      <div class="portal-page" id="page-info"></div>
+      <div class="portal-page" id="page-leaves"></div>
+      <div class="portal-page" id="page-payroll"></div>
+      <div class="portal-page" id="page-tickets"></div>
+      <div class="portal-page" id="page-request"></div>
+      <div class="portal-page" id="page-loan"></div>
+      <div class="portal-page" id="page-complaint"></div>
+      <div class="portal-page" id="page-resignation"></div>
+      <div class="portal-page" id="page-profile"></div>
+      <div class="portal-page" id="page-warnings"></div>
+      <div class="portal-page" id="page-history"></div>
+      <div class="portal-page" id="page-password"></div>
+
     </div>
+  </div>
+
+  <!-- Hidden stat elements for backward compat -->
+  <div style="display:none">
+    <div id="stat-leaves"></div><div id="stat-leaves-lbl"></div>
+    <div id="tab-info-old"></div>
+    <div class="tabs"><div class="tab" id="tab-requests-menu"></div></div>
+  </div>
 
     <!-- INFO TAB -->
     <div class="tab-content active" id="tab-info-content">
@@ -899,6 +995,19 @@ function showPortal() {
   document.getElementById('portal-name').textContent = currentEmp.name;
   document.getElementById('portal-av').textContent = currentEmp.name[0];
   loadAllData();
+  // Load home page data
+  setTimeout(() => {
+    loadHomeRecent();
+    loadStatYears();
+    // Move tab content to portal pages
+    ['info','leaves','payroll','tickets','request','loan','complaint','resignation','profile','warnings','history','password'].forEach(id => {
+      const tabContent = document.getElementById('tab-' + id + '-content');
+      const portalPage = document.getElementById('page-' + id);
+      if(tabContent && portalPage && !portalPage.hasChildNodes()) {
+        portalPage.innerHTML = tabContent.innerHTML;
+      }
+    });
+  }, 300);
   // Restore last visited tab
   const lastTab = localStorage.getItem('yahma_portal_tab');
   if(lastTab){
@@ -946,7 +1055,67 @@ function showRequestForm(type) {
   }
 }
 
-// TABS
+// PORTAL PAGE NAVIGATION
+function showPortalPage(id, el) {
+  // Update sidebar active state
+  document.querySelectorAll('.p-nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  
+  // Show page
+  document.querySelectorAll('.portal-page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if(page) {
+    page.classList.add('active');
+    // Load content if empty
+    if(!page.hasChildNodes() || page.innerHTML.trim() === '') {
+      loadPortalPageContent(id, page);
+    }
+  }
+  
+  // Load specific data
+  if(id==='warnings') loadEmpWarnings();
+  if(id==='history') loadEmpHistory();
+  if(id==='leaves') loadEmpLeaves();
+  if(id==='payroll') loadEmpPayroll();
+  if(id==='tickets') loadEmpTickets();
+  if(id==='home') loadHomeRecent();
+  
+  localStorage.setItem('yahma_portal_page', id);
+}
+
+function loadPortalPageContent(id, page) {
+  // Move content from tab-content divs to portal pages
+  const tabContent = document.getElementById('tab-' + id + '-content');
+  if(tabContent && tabContent.innerHTML.trim()) {
+    page.innerHTML = tabContent.innerHTML;
+  }
+}
+
+async function loadHomeRecent() {
+  const el = document.getElementById('home-recent-requests');
+  if(!el || !currentEmp) return;
+  const [{data:leaves},{data:loans}] = await Promise.all([
+    sb.from('leaves').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}).limit(3),
+    sb.from('loans').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}).limit(2),
+  ]);
+  const sc={pending:'#FEF3C7',approved:'#DCFCE7',rejected:'#FEE2E2',paid:'#F0FDFA'};
+  const st={pending:'⏳ معلق',approved:'✅ مقبول',rejected:'❌ مرفوض',paid:'💰 مدفوع'};
+  let html='';
+  (leaves||[]).forEach(l=>{ html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#F8FAFC;border-radius:8px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🏖️</span><div><div style="font-size:11px;font-weight:500;">${l.leave_type||'إجازة'}</div><div style="font-size:10px;color:#64748B;">${fmtDate(l.start_date)} — ${l.days_count||0} يوم</div></div></div><span style="background:${sc[l.status]||'#F1F5F9'};color:#475569;font-size:10px;padding:3px 8px;border-radius:10px;">${st[l.status]||l.status}</span></div>`; });
+  (loans||[]).forEach(l=>{ html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#F8FAFC;border-radius:8px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">💵</span><div><div style="font-size:11px;font-weight:500;">طلب سلفة</div><div style="font-size:10px;color:#64748B;">${fmt(l.amount||0)} ر.س</div></div></div><span style="background:${sc[l.status]||'#F1F5F9'};color:#475569;font-size:10px;padding:3px 8px;border-radius:10px;">${st[l.status]||l.status}</span></div>`; });
+  if(!html) html='<div style="text-align:center;padding:20px;color:#94A3B8;font-size:12px;">لا توجد طلبات سابقة</div>';
+  el.innerHTML=html;
+}
+
+// Add years of service to stats
+function loadStatYears() {
+  if(!currentEmp?.join_date) return;
+  const years = ((new Date() - new Date(currentEmp.join_date))/(365.25*24*3600*1000)).toFixed(1);
+  const el = document.getElementById('stat-years');
+  if(el) el.textContent = years;
+}
+
+// TABS (kept for backward compat)
 function showTab(id, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
