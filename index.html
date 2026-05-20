@@ -996,11 +996,11 @@ function showPortal() {
     const infoPage = document.getElementById('page-info');
     if(infoContent && infoPage) infoPage.innerHTML = infoContent.innerHTML;
   }, 300);
-  // Restore last visited tab
+  // Restore last visited tab - use portal page navigation instead
   const lastTab = localStorage.getItem('yahma_portal_tab');
   if(lastTab){
-    const tabEl = document.getElementById('tab-'+lastTab);
-    if(tabEl){ showTab(lastTab, tabEl); }
+    const navEl = document.getElementById('pnav-'+lastTab);
+    if(navEl){ showPortalPage(lastTab, navEl); }
   }
 }
 
@@ -1765,26 +1765,7 @@ async function loadPortalPhoto() {
 async function loadEmpNotifications() {
   const el = document.getElementById('emp-notifications-list');
   if(!el || !currentEmp) return;
-  el.innerHTML = '<div class="loading">جاري التحميل...</div>';
-  
   const notifs = [];
-
-  // جلب من employee_notifications (إنذارات وغيرها)
-  const {data: empNotifs} = await sb.from('employee_notifications')
-    .select('*')
-    .eq('employee_id', currentEmp.id)
-    .order('created_at', {ascending: false})
-    .limit(20);
-
-  (empNotifs||[]).forEach(n => {
-    const colorMap = {warning:'#FEF2F2', info:'#EFF6FF', success:'#DCFCE7', error:'#FEE2E2'};
-    const tcMap = {warning:'#DC2626', info:'#1E40AF', success:'#166534', error:'#991B1B'};
-    const icoMap = {warning:'⚠️', info:'ℹ️', success:'✅', error:'❌'};
-    const t = n.type||'info';
-    notifs.push({ico: icoMap[t]||'🔔', txt: (n.title||'') + (n.message ? ': ' + n.message : ''), date: n.created_at, color: colorMap[t]||'#F8FAFC', tc: tcMap[t]||'#374151'});
-  });
-
-  // جلب من الإجازات والرواتب والسلف
   const [{data:leaves},{data:pays},{data:loans}] = await Promise.all([
     sb.from('leaves').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}).limit(10),
     sb.from('payroll').select('*').eq('employee_id',currentEmp.id).order('created_at',{ascending:false}).limit(5),
@@ -1793,17 +1774,17 @@ async function loadEmpNotifications() {
   (leaves||[]).forEach(l=>{
     if(l.status==='approved') notifs.push({ico:'✅',txt:'تمت الموافقة على إجازتك: '+l.leave_type+' من '+fmtDate(l.start_date)+' إلى '+fmtDate(l.end_date),date:l.updated_at,color:'#DCFCE7',tc:'#166534'});
     else if(l.status==='rejected') notifs.push({ico:'❌',txt:'تم رفض طلب إجازتك: '+l.leave_type,date:l.updated_at,color:'#FEE2E2',tc:'#991B1B'});
+    else notifs.push({ico:'⏳',txt:'طلب إجازتك قيد المراجعة: '+l.leave_type,date:l.created_at,color:'#FEF3C7',tc:'#92400E'});
   });
   (pays||[]).forEach(p=>{
     if(p.status==='paid') notifs.push({ico:'💰',txt:'تم صرف راتبك لشهر '+p.month+'/'+p.year,date:p.updated_at,color:'#F0FDFA',tc:'#0D6E6E'});
   });
   (loans||[]).forEach(l=>{
-    if(l.status==='approved') notifs.push({ico:'✅',txt:'تمت الموافقة على سلفتك بمبلغ '+Math.round(l.amount||0).toLocaleString('ar-SA-u-nu-arab')+' ر.س',date:l.updated_at,color:'#DCFCE7',tc:'#166534'});
+    if(l.status==='approved') notifs.push({ico:'✅',txt:'تمت الموافقة على سلفتك بمبلغ '+Math.round(l.amount||0).toLocaleString(lang==='en'?'en-US':'ar-SA-u-nu-arab')+' ر.س',date:l.updated_at,color:'#DCFCE7',tc:'#166534'});
     else if(l.status==='rejected') notifs.push({ico:'❌',txt:'تم رفض طلب سلفتك',date:l.updated_at,color:'#FEE2E2',tc:'#991B1B'});
   });
-
   notifs.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(!notifs.length){el.innerHTML = `<div style="text-align:center;padding:30px;color:#94A3B8;">🔔 لا توجد إشعارات</div>`;return;}
+  if(!notifs.length){el.innerHTML = `<div style="text-align:center;padding:30px;color:#94A3B8;">🔔 ${lang==='ar'?'لا توجد إشعارات':'No notifications'}</div>`;return;}
   el.innerHTML=notifs.map(n=>`<div style="display:flex;gap:12px;padding:12px;background:${n.color};border-radius:10px;margin-bottom:8px;">
     <span style="font-size:20px;">${n.ico}</span>
     <div><div style="font-size:13px;color:${n.tc};font-weight:500;">${n.txt}</div>
@@ -2279,14 +2260,14 @@ async function loadNotifDropdown() {
   // Get recent leave decisions
   const {data:leaves} = await sb.from('leaves')
     .select('*').eq('employee_id', currentEmp.id)
-    .in('status', ['approved','rejected'])
+    .or('status.eq.approved,status.eq.rejected')
     .order('updated_at', {ascending:false})
     .limit(5);
   
   // Get recent loan decisions  
   const {data:loans} = await sb.from('loans')
     .select('*').eq('employee_id', currentEmp.id)
-    .in('status', ['approved','rejected'])
+    .or('status.eq.approved,status.eq.rejected')
     .order('updated_at', {ascending:false})
     .limit(3);
 
